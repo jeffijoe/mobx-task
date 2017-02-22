@@ -1,0 +1,411 @@
+# mobx-task
+
+[![npm](https://img.shields.io/npm/v/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
+[![dependency Status](https://img.shields.io/david/jeffijoe/mobx-task.svg?maxAge=1000)](https://david-dm.org/jeffijoe/mobx-task)
+[![devDependency Status](https://img.shields.io/david/dev/jeffijoe/mobx-task.svg?maxAge=1000)](https://david-dm.org/jeffijoe/mobx-task)
+[![Build Status](https://img.shields.io/travis/jeffijoe/mobx-task.svg?maxAge=1000)](https://travis-ci.org/jeffijoe/mobx-task)
+[![Coveralls](https://img.shields.io/coveralls/jeffijoe/mobx-task.svg?maxAge=1000)](https://coveralls.io/github/jeffijoe/mobx-task)
+[![npm](https://img.shields.io/npm/dt/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
+[![npm](https://img.shields.io/npm/l/mobx-task.svg?maxAge=1000)](https://github.com/jeffijoe/mobx-task/blob/master/LICENSE.md)
+[![node](https://img.shields.io/node/v/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
+[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+
+Takes the suck out of managing state for async functions in MobX.
+
+# Installation
+
+```
+npm install --save mobx-tax
+```
+
+# What is it?
+
+`mobx-task` removes the boilerplate of maintaining loading and error state of async functions in MobX.
+
+**Your code before:**
+
+```js
+class TodoStore {
+  @observable fetchTodosRunning = true
+  @observable fetchTodosError
+
+  async fetchTodos () {
+    try {
+      runInAction(() => {
+        this.fetchTodosRunning = true
+      })
+      // ...
+      await fetch('/todos')
+    } catch (err) {
+      runInAction(() => {
+        this.fetchTodosError = err
+      })
+      throw err
+    } finally {
+      runInAction(() => {
+        this.fetchTodosRunning = false
+      })
+    }
+  }
+}
+```
+
+**Your code with `mobx-task`**
+
+```js
+import { task } from 'mobx-task'
+
+class TodoStore {
+  @task async fetchTodos () {
+    await fetch('/todos')
+  }
+}
+```
+
+# Full example with classes and decorators
+
+```js
+import { observable, action } from 'mobx'
+import { task } from 'mobx-task'
+import React from 'react'
+import { observer } from 'mobx-react'
+
+class TodoStore {
+  @observable todos = []
+
+  @task async fetchTodos () {
+    await fetch('/todos')
+      .then(r => r.json())
+      .then(action(todos => this.todos.replace(todos)))
+  }
+}
+
+const store = new TodoStore()
+
+const App = observer(() => {
+  return (
+    <div>
+      {store.fetchTodos.match({
+        pending: () => <div>Loading, please wait..</div>,
+        rejected: (err) => <div>Error: {err.message}</div>,
+        resolved: () => (
+          <ul>
+            {store.todos.map(todo =>
+              <div>{todo.text}</div>
+            )}
+          </ul>
+        )
+      })}
+    </div>
+  )
+})
+```
+
+# Full example with plain observables
+
+```js
+import { observable, action } from 'mobx'
+import { task } from 'mobx-task'
+import React from 'react'
+import { observer } from 'mobx-react'
+
+const store = observable({
+  todos: [],
+  fetchTodos: task(async () => {
+    await fetch('/todos')
+      .then(r => r.json())
+      .then(action(todos => store.todos.replace(todos)))
+  })
+})
+
+const App = observer(() => {
+  return (
+    <div>
+      {store.fetchTodos.match({
+        pending: () => <div>Loading, please wait..</div>,
+        rejected: (err) => <div>Error: {err.message}</div>,
+        resolved: () => (
+          <ul>
+            {store.todos.map(todo =>
+              <div>{todo.text}</div>
+            )}
+          </ul>
+        )
+      })}
+    </div>
+  )
+})
+```
+
+# How does it work?
+
+`mobx-task` wraps the given function in another function which
+does the state maintenance for you using MobX observables and computeds.
+It also exposes the state on the function.
+
+```js
+const func = task(() => 42)
+
+// The default state is `pending`.
+console.log(func.state) // pending
+console.log(func.pending) // true
+
+// Tasks are always async.
+func().then((result) => {
+  console.log(func.state) // resolved
+  console.log(func.resolved) // true
+  console.log(func.pending) // false
+
+  console.log(result) // 42
+
+  // The latest result is also stored.
+  console.log(func.result) // 42
+})
+```
+
+It also maintains error state.
+
+```js
+const func = task(() => {
+  throw new Error('Nope')
+})
+
+func().catch(err => {
+  console.log(func.state) // rejected
+  console.log(func.rejected) // true
+  console.log(err) // Error('Nope')
+  console.log(func.error) // Error('Nope')
+})
+```
+
+And it's fully reactive.
+
+```js
+import { autorun } from 'mobx'
+
+const func = task(async () => {
+  return await fetch('/api/todos').then(r => r.json())
+})
+
+autorun(() => {
+  // Very useful for functional goodness (like React components)
+  const message = func.match({
+    pending: () => 'Loading todos...',
+    rejected: (err) => `Error: ${err.message}`,
+    resolved: (todos) => `Got ${todos.length} todos`
+  })
+
+  console.log(message)
+})
+```
+
+# API documentation
+
+There's only a single exported member; `task`.
+
+**ES6:**
+
+```js
+import { task } from 'mobx-task'
+```
+
+**CommonJS:**
+
+```js
+const { task } = require('mobx-task')
+```
+
+## The `task` factory
+
+The top-level `task` creates a new task function.
+
+```
+const myAwesomeFunc = task(async () => {
+  return await doAsyncWork()
+})
+```
+
+Parameters:
+
+- `fn` - the function to wrap in a task.
+- `opts` - options object. All options are _optional_.
+  - `opts.state` - the initial state, default is `'pending'`.
+  - `opts.error` - initial error object to set.
+  - `opts.result` - initial result to set.
+  - `opts.swallow` - if `true`, does not throw errors after catching them.
+
+Additionally, the top-level `task` export has shortcuts for the `opts.state` option (except pending, since its the default).
+
+- `task.resolved(func, opts)`
+- `task.rejected(func, opts)`
+
+For example:
+
+```js
+const func = task.resolved(() => 42)
+console.log(func.state) // resolved
+```
+
+Is the same as doing:
+
+```js
+const func = task(() => 42, { state: 'resolved' })
+console.log(func.state) // resolved
+```
+
+## As a decorator
+
+The `task` function also works as a decorator.
+
+> Note: you need to add `babel-plugin-transform-decorators-legacy` to your babel config for this to work.
+
+Example:
+
+```js
+class Test {
+  @task async load () {
+
+  }
+
+  // shortcuts, too
+  @task.resolved async save () {
+
+  }
+
+  // with options
+  @task({ swallow: true }) async dontCareIfIThrow() {
+
+  }
+
+  // options for shortcuts
+  @task.rejected({ error: 'too dangerous lol' }) async whyEvenBother () {
+
+  }
+}
+```
+
+## The `task` itself
+
+The thing that `task()` returns is the wrapped function including all that extra goodness.
+
+### `state`
+
+An observable string maintained while running the task.
+
+Possible values:
+
+- `"pending"` - waiting to complete or didn't start yet (default)
+- `"resolved"` - done
+- `"rejected"` - failed
+
+### `pending`, `resolved`, `rejected`
+
+Computed shorthands for `state`. E.g. `pending = state === 'pending'`
+
+### `result`
+
+Set after the task completes. If the task fails, it is set to `undefined`.
+
+### `result`
+
+Set if the task fails. If the task succeeds, it is set to `undefined`.
+
+### `match()`
+
+Utility for pattern matching on the state.
+
+Example:
+
+```
+const func = task(() => 42)
+
+const result = func.match({
+  pending: () => 'working on it',
+  rejected: (err) => 'failed: ' + err.message,
+  resolved: (answer) => `The answer to the universe and everything: ${answer}`
+})
+```
+
+### `wrap()`
+
+Used to wrap the task in another function while preserving access to the state - aka. _Higher Order Functions_.
+
+**Returns the new function, does not modify the original function.**
+
+```js
+// Some higher-order-function...
+const addLogging = function (inner) {
+  return function wrapped () {
+    console.log('Started')
+    return inner.apply(this, arguments).then(result => {
+      console.log('Done!')
+      return result
+    })
+  }
+}
+
+const func = task(() => 42)
+const funcWithLogging = func.wrap(addLogging)
+```
+
+### `setState()`
+
+Lets you set the internal state at any time for whatever reason you may have. Used internally as well.
+
+Example:
+
+```
+const func = task(() => 42)
+
+func.setState({ state: 'resolved', result: 1337 })
+console.log(func.state) // 'resolved'
+console.log(func.resolved) // true
+console.log(func.result) // 1337
+```
+
+### `bind()`
+
+The wrapped function patches `bind()` so the bound function contains the task state, too.
+Other than that it functions exactly like `Function.prototype.bind`.
+
+```
+const obj = {
+  value: 42,
+  doStuff: task(() => this.value)
+}
+
+const bound = obj.doStuff.bind(obj)
+bound()
+console.log(bound.pending) // true
+```
+
+# Gotchas
+
+It's important to remember that if you wrap the task in something else, you will loose the state.
+
+**Bad:**
+
+```
+import once from 'lodash/once'
+
+const func = task(() => 42)
+const funcOnce = once(func)
+console.log(funcOnce.pending) // undefined
+```
+
+This is nothing special, but it's a common gotcha when you like to compose your functions. We can make this work though,
+by using `.wrap(fn => once(fn))`. See the [`wrap()`](#wrap) documentation.
+
+**Good:**
+
+```
+import once from 'lodash/once'
+
+const func = task(() => 42)
+const funcOnce = func.wrap(once)
+console.log(funcOnce.pending) // true
+```
+
+# Author
+
+Jeff Hansen - [@Jeffijoe](https://twitter.com/Jeffijoe)
