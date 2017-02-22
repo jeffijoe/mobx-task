@@ -161,6 +161,8 @@ function taskCreatorFactory (opts) {
   }
 }
 
-export const task = taskCreatorFactory()
+const task = taskCreatorFactory()
 task.resolved = taskCreatorFactory({ state: 'resolved' })
 task.rejected = taskCreatorFactory({ state: 'rejected' })
+
+module.exports = task

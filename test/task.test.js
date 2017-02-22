@@ -1,6 +1,6 @@
 import test from 'ava'
 import { reaction, action, observable } from 'mobx'
-import { task } from '../src/task'
+import task from '../src/task'
 import defer from 'promise-defer'
 import memoize from 'lodash/memoize'
 import { spy } from 'sinon'
