@@ -1,6 +1,6 @@
 {
   "name": "mobx-task",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Removes boilerplate of tracking when an async function is running for MobX",
   "main": "lib/index.js",
   "engines": {
@@ -10,7 +10,7 @@
     "test": "NODE_ENV=test ava 'test/**/*.test.js'",
     "test:watch": "npm run test -- --watch",
     "build": "rimraf lib && babel src -d lib -s",
-    "lint": "esw lib/ test/",
+    "lint": "esw src/ test/",
     "lint:watch": "npm run lint -- --watch",
     "cover": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
