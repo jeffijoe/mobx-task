@@ -1,6 +1,6 @@
 {
   "name": "mobx-task",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Removes boilerplate of tracking when an async function is running for MobX.",
   "main": "lib/index.js",
   "engines": {
