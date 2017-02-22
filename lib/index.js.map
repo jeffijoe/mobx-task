@@ -1,1 +1,0 @@
-{"version":3,"sources":["../src/index.js"],"names":["module","exports","task","require"],"mappings":";;AAAA;;;;;;AAMAA,OAAOC,OAAP,CAAeC,IAAf,GAAsBC,QAAQ,QAAR,CAAtB","file":"index.js","sourcesContent":["/**\n * mobx-task\n *\n * Copyright © Jeff Hansen 2017.\n * MIT licensed.\n */\nmodule.exports.task = require('./task')\n"]}
