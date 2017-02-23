@@ -82,6 +82,14 @@ class TodoStore {
 
 const store = new TodoStore()
 
+// Start the task.
+store.fetchTodos()
+
+// and reload every 3 seconds, just cause..
+setInterval(() => {
+  store.fetchTodos()
+}, 3000)
+
 const App = observer(() => {
   return (
     <div>
@@ -117,6 +125,14 @@ const store = observable({
       .then(action(todos => store.todos.replace(todos)))
   })
 })
+
+// Start the task.
+store.fetchTodos()
+
+// and reload every 3 seconds, just cause..
+setInterval(() => {
+  store.fetchTodos()
+}, 3000)
 
 const App = observer(() => {
   return (
@@ -197,6 +213,9 @@ autorun(() => {
 
   console.log(message)
 })
+
+// start!
+func().then(todos => { /*...*/ })
 ```
 
 # API documentation
@@ -217,11 +236,26 @@ const { task } = require('mobx-task')
 
 ## The `task` factory
 
-The top-level `task` creates a new task function.
+The top-level `task` creates a new task function and initializes it's state.
 
 ```
 const myAwesomeFunc = task(async () => {
   return await doAsyncWork()
+})
+
+// Initial state is `pending`
+console.log(myAwesomeFunc.state) // "pending"
+```
+
+Let's try to run it
+
+```js
+const promise = myAwesomeFunc()
+console.log(myAwesomeFunc.state) // "pending"
+
+promise.then((result) => {
+  console.log('nice', result)
+  console.log(myAwesomeFunc.state) // "resolved"
 })
 ```
 
