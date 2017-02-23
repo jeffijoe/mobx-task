@@ -261,3 +261,26 @@ test('match returns undefined if there is no case', (t) => {
   fn.setState({ state: 'rejected', error: new Error('hah') })
   t.is(run(), 'hah')
 })
+
+test('calling the function multiple times will only trigger setState:resolved once', async (t) => {
+  const fn = task((d) => d.promise)
+  const d1 = defer()
+  const d2 = defer()
+
+  const p1 = fn(d1)
+  const p2 = fn(d2)
+
+  await new Promise((resolve) => setTimeout(resolve, 20))
+
+  d1.resolve(1)
+  const r1 = await p1
+  t.is(fn.pending, true, 'should still be pending cause we started another task')
+
+  d2.resolve(2)
+
+  const r2 = await p2
+  t.is(fn.resolved, true, 'should be resolved after last call is done')
+
+  t.is(r1, 1)
+  t.is(r2, 2)
+})

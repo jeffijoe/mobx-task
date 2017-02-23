@@ -14,17 +14,29 @@ function createTask (fn, opts) {
     ...opts
   }
 
+  // Track how many times this task was called.
+  // Used to prevent premature state changes when the
+  // task is called again before the first run completes.
+  let callCount = 0
+
   /**
    * The actual task function.
    */
   function task () {
+    const callCountWhenStarted = ++callCount
     return promiseTry(() => {
       task.setState({ state: 'pending', error: undefined, result: undefined })
       return Promise.resolve(fn.apply(this, arguments)).then((result) => {
-        task.setState({ state: 'resolved', error: undefined, result })
+        // If we called the task again before the first
+        // one completes, we don't want to set to resolved before the last call completes.
+        if (callCountWhenStarted === callCount) {
+          task.setState({ state: 'resolved', error: undefined, result })
+        }
         return result
       }).catch(err => {
-        task.setState({ state: 'rejected', error: err, result: undefined })
+        if (callCountWhenStarted === callCount) {
+          task.setState({ state: 'rejected', error: err, result: undefined })
+        }
         if (!opts.swallow) {
           throw err
         }
