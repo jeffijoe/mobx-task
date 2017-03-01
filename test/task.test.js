@@ -285,6 +285,29 @@ test('calling the function multiple times will only trigger setState:resolved on
   t.is(r2, 2)
 })
 
+test('calling the function multiple times will not trigger setState:rejected if not the last call', async (t) => {
+  const fn = task((d) => d.promise)
+  const d1 = defer()
+  const d2 = defer()
+
+  const p1 = fn(d1)
+  const p2 = fn(d2)
+
+  await new Promise((resolve) => setTimeout(resolve, 20))
+
+  d1.reject(new Error('Oh shit'))
+  const r1 = await t.throws(p1)
+  t.is(fn.pending, true, 'should still be pending cause we started another task')
+
+  d2.resolve(2)
+
+  const r2 = await p2
+  t.is(fn.resolved, true, 'should be resolved after last call is done because last call was fine')
+
+  t.is(r1.message, 'Oh shit')
+  t.is(r2, 2)
+})
+
 test('catches sync errors', async (t) => {
   const fn = task(() => {
     throw new Error('hah')
