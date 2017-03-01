@@ -284,3 +284,13 @@ test('calling the function multiple times will only trigger setState:resolved on
   t.is(r1, 1)
   t.is(r2, 2)
 })
+
+test('catches sync errors', async (t) => {
+  const fn = task(() => {
+    throw new Error('hah')
+  })
+
+  await t.throws(fn())
+  t.is(fn.rejected, true)
+  t.is(fn.error.message, 'hah')
+})

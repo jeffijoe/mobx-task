@@ -33,14 +33,14 @@ function createTask (fn, opts) {
           task.setState({ state: 'resolved', error: undefined, result })
         }
         return result
-      }).catch(err => {
-        if (callCountWhenStarted === callCount) {
-          task.setState({ state: 'rejected', error: err, result: undefined })
-        }
-        if (!opts.swallow) {
-          throw err
-        }
       })
+    }).catch(err => {
+      if (callCountWhenStarted === callCount) {
+        task.setState({ state: 'rejected', error: err, result: undefined })
+      }
+      if (!opts.swallow) {
+        throw err
+      }
     })
   }
 
