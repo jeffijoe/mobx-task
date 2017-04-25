@@ -24,15 +24,15 @@ Table of Contents
       * [The task factory](#the-task-factory)
       * [As a decorator](#as-a-decorator)
       * [The task itself](#the-task-itself)
-         * [state](#state)
-         * [pending, <code>resolved</code>, <code>rejected</code>](#pending-resolved-rejected)
-         * [result](#result)
-         * [result](#result-1)
-         * [match()](#match)
-         * [wrap()](#wrap)
-         * [setState()](#setstate)
-         * [bind()](#bind)
-         * [reset()](#reset)
+         * [`state`](#state)
+         * [`pending`, `resolved`, `rejected`](#pending-resolved-rejected)
+         * [`result`](#result)
+         * [`error`](#error)
+         * [`match()`](#match)
+         * [`wrap()`](#wrap)
+         * [`setState()`](#setstate)
+         * [`bind()`](#bind)
+         * [`reset()`](#reset)
    * [Gotchas](#gotchas)
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
@@ -366,7 +366,7 @@ Computed shorthands for `state`. E.g. `pending = state === 'pending'`
 
 Set after the task completes. If the task fails, it is set to `undefined`.
 
-### `result`
+### `error`
 
 Set if the task fails. If the task succeeds, it is set to `undefined`.
 
