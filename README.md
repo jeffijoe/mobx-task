@@ -12,6 +12,32 @@
 
 Takes the suck out of managing state for async functions in MobX.
 
+Table of Contents
+=================
+
+   * [Installation](#installation)
+   * [What is it?](#what-is-it)
+   * [Full example with classes and decorators](#full-example-with-classes-and-decorators)
+   * [Full example with plain observables](#full-example-with-plain-observables)
+   * [How does it work?](#how-does-it-work)
+   * [API documentation](#api-documentation)
+      * [The task factory](#the-task-factory)
+      * [As a decorator](#as-a-decorator)
+      * [The task itself](#the-task-itself)
+         * [state](#state)
+         * [pending, <code>resolved</code>, <code>rejected</code>](#pending-resolved-rejected)
+         * [result](#result)
+         * [result](#result-1)
+         * [match()](#match)
+         * [wrap()](#wrap)
+         * [setState()](#setstate)
+         * [bind()](#bind)
+         * [reset()](#reset)
+   * [Gotchas](#gotchas)
+      * [Wrapping the task function](#wrapping-the-task-function)
+      * [Using the decorator on React Components](#using-the-decorator-on-react-components)
+   * [Author](#author)
+
 # Installation
 
 ```
@@ -413,7 +439,15 @@ bound()
 console.log(bound.pending) // true
 ```
 
+### `reset()`
+
+Resets the state to what it was when the task was initialized.
+
+This means if you use `const t = task.resolved(fn)`, calling `t.reset()` will set the state to `resolved`.
+
 # Gotchas
+
+## Wrapping the task function
 
 It's important to remember that if you wrap the task in something else, you will loose the state.
 
@@ -438,6 +472,29 @@ import once from 'lodash/once'
 const func = task(() => 42)
 const funcOnce = func.wrap(once)
 console.log(funcOnce.pending) // true
+```
+
+## Using the decorator on React Components
+
+Using the `@task` decorator on React components is absolutely a valid use case, but if you use **React Hot Loader** or
+any HMR technology that patches functions on components, you will loose access to the task state.
+
+A workaround is to not use the decorator, but a property initializer:
+
+```js
+class Awesome extends React.Component {
+  fetchTodos = task(() => {
+    return fetch('/api/todos')
+  })
+
+  render () {
+    return (
+      <div>
+        {this.fetchTodos.match(...)}
+      </div>
+    )
+  }
+}
 ```
 
 # Author

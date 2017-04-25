@@ -317,3 +317,33 @@ test('catches sync errors', async (t) => {
   t.is(fn.rejected, true)
   t.is(fn.error.message, 'hah')
 })
+
+test('reset() resets the state to resolved with result', async (t) => {
+  const fn = task(() => {
+    return 1337
+  }, { state: 'resolved', result: 42 })
+  t.is(fn.result, 42)
+
+  const result = await fn()
+  t.is(result, 1337)
+  t.is(fn.state, 'resolved')
+
+  const fromReset = fn.reset()
+  t.is(fromReset, fn)
+  t.is(fn.result, 42)
+})
+
+test('reset() resets the state to pending', async (t) => {
+  const fn = task(() => {
+    return 1337
+  })
+  t.is(fn.result, undefined)
+
+  const result = await fn()
+  t.is(result, 1337)
+  t.is(fn.state, 'resolved')
+
+  fn.reset()
+  t.is(fn.result, undefined)
+  t.is(fn.state, 'pending')
+})

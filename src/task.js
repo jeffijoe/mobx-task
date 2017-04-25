@@ -57,15 +57,15 @@ function createTask (fn, opts) {
   const taskStateSchemaKeys = Object.keys(taskStateSchema)
   const taskState = observable(taskStateSchema)
 
-  setupTask(task, taskState, taskStateSchemaKeys)
+  setupTask(task, taskState, taskStateSchemaKeys, opts)
   return task
 }
 
 /**
  * Assigns the task methods and state to the given function.
  */
-function setupTask (fn, taskState, taskStateSchemaKeys) {
-  const setup = (func) => setupTask(func, taskState, taskStateSchemaKeys)
+function setupTask (fn, taskState, taskStateSchemaKeys, opts) {
+  const setup = (func) => setupTask(func, taskState, taskStateSchemaKeys, opts)
   proxyGetters(fn, taskState, taskStateSchemaKeys)
   Object.assign(fn, {
     /**
@@ -119,6 +119,17 @@ function setupTask (fn, taskState, taskStateSchemaKeys) {
       }
 
       return match()
+    },
+    /**
+     * Resets the state to what it was when initialized.
+     */
+    reset: () => {
+      fn.setState({
+        state: opts.state,
+        result: opts.result,
+        error: opts.error
+      })
+      return fn
     }
   })
   return fn
@@ -138,13 +149,13 @@ function taskCreatorFactory (opts) {
       return createTask(arg1, { ...opts, ...arg2 })
     }
 
-    const makeDecorator = (inner) => {
+    const makeDecorator = (innerOpts) => {
       return function decorator (target, name, descriptor) {
         if (descriptor.value) {
           const fn = descriptor.value
           delete descriptor.writable
           delete descriptor.value
-          descriptor.value = createTask(fn, { ...opts, ...inner })
+          descriptor.value = createTask(fn, { ...opts, ...innerOpts })
         } else {
           const get = descriptor.get
           let t
@@ -155,7 +166,7 @@ function taskCreatorFactory (opts) {
             }
 
             const fn = get.apply(this, arguments)
-            t = createTask(fn, { ...opts, ...inner })
+            t = createTask(fn, { ...opts, ...innerOpts })
             return t
           }
         }
