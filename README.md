@@ -41,7 +41,7 @@ Table of Contents
 # Installation
 
 ```
-npm install --save mobx-tax
+npm install --save mobx-task
 ```
 
 # What is it?
