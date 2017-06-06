@@ -151,24 +151,23 @@ function taskCreatorFactory (opts) {
 
     const makeDecorator = (innerOpts) => {
       return function decorator (target, name, descriptor) {
+        let get = descriptor.get
         if (descriptor.value) {
           const fn = descriptor.value
           delete descriptor.writable
           delete descriptor.value
-          descriptor.value = createTask(fn, { ...opts, ...innerOpts })
-        } else {
-          const get = descriptor.get
-          let t
-          descriptor.get = function getter () {
-            /* istanbul ignore next */
-            if (t) {
-              return t
-            }
+          get = () => fn
+        }
 
-            const fn = get.apply(this, arguments)
-            t = createTask(fn, { ...opts, ...innerOpts })
-            return t
+        const cacheSymbol = Symbol(`${name} task`)
+        descriptor.get = function getter () {
+          const cached = this[cacheSymbol]
+          if (cached) {
+            return cached
           }
+
+          const fn = get.apply(this, arguments)
+          return (this[cacheSymbol] = createTask(fn, { ...opts, ...innerOpts }))
         }
       }
     }

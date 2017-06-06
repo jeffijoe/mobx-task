@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0
+
+* Fixed issue with state being shared between instances when using `task` as a decorator (#3)
+
 ## 0.1.3
 
 * Added `reset()` function.

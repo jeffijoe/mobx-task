@@ -54,17 +54,17 @@
     "coveralls": "^2.13.1",
     "eslint": "^3.19.0",
     "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.2.0",
-    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-node": "^5.0.0",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-watch": "^3.1.0",
     "lodash": "^4.17.4",
-    "mobx": "^3.1.9",
-    "nyc": "^10.3.2",
+    "mobx": "^3.1.11",
+    "nyc": "^11.0.2",
     "promise-defer": "^1.0.0",
     "rimraf": "^2.6.1",
-    "sinon": "^2.2.0"
+    "sinon": "^2.3.2"
   },
   "peerDependencies": {
     "mobx": "^3.1.0"
