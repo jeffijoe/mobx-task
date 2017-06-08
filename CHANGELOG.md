@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+* Fixed issue with not being able to reassign a decorated method.
+
 ## 0.2.0
 
 * Fixed issue with state being shared between instances when using `task` as a decorator (#3)
