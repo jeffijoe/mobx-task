@@ -169,6 +169,18 @@ function taskCreatorFactory (opts) {
           const fn = get.apply(this, arguments)
           return (this[cacheSymbol] = createTask(fn, { ...opts, ...innerOpts }))
         }
+
+        descriptor.set = function setter (newValue) {
+          Object.defineProperty(this, name, {
+            configurable: true,
+            writable: true,
+            // IS enumerable when reassigned by the outside word
+            enumerable: true,
+            value: newValue
+          })
+
+          return newValue
+        }
       }
     }
 
