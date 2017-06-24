@@ -6,7 +6,8 @@
 
 ## 0.2.0
 
-* Fixed issue with state being shared between instances when using `task` as a decorator (#3)
+* Fixed issue with state being shared between instances when using `task` as a decorator (#3).
+  **This breaks compatibility with `autobind-decorator`**.
 
 ## 0.1.3
 
