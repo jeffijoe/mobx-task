@@ -36,6 +36,7 @@ Table of Contents
    * [Gotchas](#gotchas)
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
+      * [Using the decorator with `autobind-decorator`](#using-with-autobind-decorator)
    * [Author](#author)
 
 # Installation
@@ -496,6 +497,46 @@ class Awesome extends React.Component {
   }
 }
 ```
+
+## Using the decorator with `autobind-decorator`
+
+Because of the way the `autobind-decorator` class decorator works, it won't pick up any `@task`-decorated
+class methods because `@task` rewrites `descriptor.value` to `descriptor.get` which `autobind-decorator` does
+not look for. This is due to the fact that `autobind-decorator` does not (and _should not_) evaluate getters.
+
+```js
+import autobind from 'autobind-decorator'
+
+@autobind
+class Store {
+  value = 42
+
+  // Using decorator
+  @task boo () {
+    return this.value
+  }
+
+  // Using field initializer
+  woo = task(() => {
+    return this.value
+  })
+}
+
+// Nay
+const store = new Store()
+store.boo() // 42
+
+const boo = store.boo
+boo() // Error: cannot read property "value" of undefined
+
+// Yay
+store.woo() // 42
+
+const woo = store.woo
+woo() // 42
+```
+
+Alternatively, use `this.boo = this.boo.bind(this)` in the constructor.
 
 # Author
 
