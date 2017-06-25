@@ -368,3 +368,23 @@ test('autobind works', async (t) => {
   t.is(fn.state, 'resolved')
   t.is(sub.func.state, 'resolved')
 })
+
+test('can reassign decorated method', async (t) => {
+  class Test {
+    @task method () {}
+  }
+
+  const sub = new Test()
+  sub.method = 123
+  t.is(sub.method, 123)
+})
+
+test('decorator value is cached', async (t) => {
+  class Test {
+    @task method () { return 42 }
+  }
+
+  const sub = new Test()
+  t.is(await sub.method(), 42)
+  t.is(await sub.method(), 42)
+})

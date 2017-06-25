@@ -159,40 +159,40 @@ function taskCreatorFactory (opts) {
           get = () => fn
         }
 
-        const cacheSymbol = Symbol(`${name} task`)
         // In IE11 calling Object.defineProperty has a side-effect of evaluating the
         // getter for the property which is being replaced. This causes infinite
         // recursion and an "Out of stack space" error.
         // Credit: autobind-decorator source
         let definingProperty = false
-        descriptor.get = function getter () {
-          let cached = this[cacheSymbol]
-          if (cached || definingProperty) {
-            return cached
+        return {
+          get: function getter () {
+            /* istanbul ignore next */
+            if (definingProperty) {
+              return get.apply(this)
+            }
+
+            const fn = get.apply(this, arguments)
+            const wrapped = createTask(fn, { ...opts, ...innerOpts })
+            definingProperty = true
+            Object.defineProperty(this, name, {
+              value: wrapped,
+              configurable: true,
+              writable: true
+            })
+            definingProperty = false
+            return wrapped
+          },
+          set: function setter (newValue) {
+            Object.defineProperty(this, name, {
+              configurable: true,
+              writable: true,
+              // IS enumerable when reassigned by the outside word
+              enumerable: true,
+              value: newValue
+            })
+
+            return newValue
           }
-
-          const fn = get.apply(this, arguments)
-          cached = this[cacheSymbol] = createTask(fn, { ...opts, ...innerOpts })
-          definingProperty = true
-          Object.defineProperty(this, name, {
-            value: cached,
-            configurable: true,
-            writable: true
-          })
-          definingProperty = false
-          return cached
-        }
-
-        descriptor.set = function setter (newValue) {
-          Object.defineProperty(this, name, {
-            configurable: true,
-            writable: true,
-            // IS enumerable when reassigned by the outside word
-            enumerable: true,
-            value: newValue
-          })
-
-          return newValue
         }
       }
     }

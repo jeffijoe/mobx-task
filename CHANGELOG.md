@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3
+
+* Legit fixed the `@autobind` issue that was supposed to be fixed in 0.2.2. My bad!
+
 ## 0.2.2
 
 * Fixed issue with `@autobind` method decorator being applied first didn't work as promised.
