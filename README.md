@@ -520,6 +520,11 @@ class Store {
   woo = task(() => {
     return this.value
   })
+
+  // Decorator with autobind applied first
+  @task @autobind woohoo () {
+    return this.value
+  }
 }
 
 // Nay
@@ -534,6 +539,9 @@ store.woo() // 42
 
 const woo = store.woo
 woo() // 42
+
+const woohoo = store.woohoo
+woohoo() // 42
 ```
 
 Alternatively, use `this.boo = this.boo.bind(this)` in the constructor.

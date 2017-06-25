@@ -365,4 +365,7 @@ test('autobind works', async (t) => {
   const fn = sub.func
   const result = await fn()
   t.is(result, 42)
+
+  const nope = sub.nope
+  t.is(nope(), undefined)
 })
