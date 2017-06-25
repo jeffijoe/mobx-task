@@ -42,6 +42,7 @@
   },
   "homepage": "https://github.com/jeffijoe/mobx-task#readme",
   "devDependencies": {
+    "autobind-decorator": "^1.4.3",
     "ava": "^0.19.1",
     "babel-cli": "^6.24.1",
     "babel-eslint": "^7.2.3",

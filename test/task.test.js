@@ -3,6 +3,7 @@ import { reaction, action, observable } from 'mobx'
 import task from '../src/task'
 import defer from 'promise-defer'
 import memoize from 'lodash/memoize'
+import autobind from 'autobind-decorator'
 import { spy } from 'sinon'
 
 test('goes from pending -> resolved', async function (t) {
@@ -346,4 +347,22 @@ test('reset() resets the state to pending', async (t) => {
   fn.reset()
   t.is(fn.result, undefined)
   t.is(fn.state, 'pending')
+})
+
+test('autobind works', async (t) => {
+  @autobind
+  class Test {
+    constructor () {
+      this.value = 42
+    }
+
+    @task @autobind func () {
+      return this.value
+    }
+  }
+
+  const sub = new Test()
+  const fn = sub.func
+  const result = await fn()
+  t.is(result, 42)
 })
