@@ -160,14 +160,27 @@ function taskCreatorFactory (opts) {
         }
 
         const cacheSymbol = Symbol(`${name} task`)
+        // In IE11 calling Object.defineProperty has a side-effect of evaluating the
+        // getter for the property which is being replaced. This causes infinite
+        // recursion and an "Out of stack space" error.
+        // Credit: autobind-decorator source
+        let definingProperty = false
         descriptor.get = function getter () {
-          const cached = this[cacheSymbol]
-          if (cached) {
+          let cached = this[cacheSymbol]
+          if (cached || definingProperty) {
             return cached
           }
 
           const fn = get.apply(this, arguments)
-          return (this[cacheSymbol] = createTask(fn, { ...opts, ...innerOpts }))
+          cached = this[cacheSymbol] = createTask(fn, { ...opts, ...innerOpts })
+          definingProperty = true
+          Object.defineProperty(this, name, {
+            value: cached,
+            configurable: true,
+            writable: true
+          })
+          definingProperty = false
+          return cached
         }
 
         descriptor.set = function setter (newValue) {

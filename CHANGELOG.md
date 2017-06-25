@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+* Fixed issue with `@autobind` method decorator being applied first didn't work as promised.
+
 ## 0.2.1
 
 * Fixed issue with not being able to reassign a decorated method.
