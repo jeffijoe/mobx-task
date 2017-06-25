@@ -504,6 +504,8 @@ Because of the way the `autobind-decorator` class decorator works, it won't pick
 class methods because `@task` rewrites `descriptor.value` to `descriptor.get` which `autobind-decorator` does
 not look for. This is due to the fact that `autobind-decorator` does not (and _should not_) evaluate getters.
 
+You can either bind the tasks in the constructor, use field initializers, or apply the `@autobind` **method decorator** _before_ the `@task` decorator. `@task @autobind method() {}` is the correct order.
+
 ```js
 import autobind from 'autobind-decorator'
 
