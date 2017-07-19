@@ -36,7 +36,7 @@ Table of Contents
    * [Gotchas](#gotchas)
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
-      * [Using the decorator with `autobind-decorator`](#using-with-autobind-decorator)
+      * [Using the decorator with `autobind-decorator`](#using-the-decorator-with-autobind-decorator)
    * [Author](#author)
 
 # Installation
