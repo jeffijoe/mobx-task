@@ -1,7 +1,8 @@
 {
   "name": "mobx-task",
-  "version": "0.2.3",
-  "description": "Removes boilerplate of tracking when an async function is running for MobX.",
+  "version": "1.0.0-alpha.0",
+  "description":
+    "Removes boilerplate of tracking when an async function is running for MobX.",
   "main": "lib/index.js",
   "engines": {
     "node": ">=4.0.0"
@@ -10,30 +11,27 @@
     "test": "NODE_ENV=test ava 'test/**/*.test.js'",
     "test:watch": "npm run test -- --watch",
     "build": "rimraf lib && babel src -d lib -s",
-    "lint": "esw --fix src/ test/ && prettier --write '{src,test}/**/*.{js,ts}'",
+    "lint":
+      "esw --fix src/ test/ && prettier --write '{src,test}/**/*.{js,ts}'",
     "lint-watch": "npm run lint -- --watch",
     "cover": "nyc npm test",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "publish:pre": "npm run lint && npm run build && npm run cover",
     "publish:post": "npm publish && git push --follow-tags",
-    "release:prerelease": "npm run publish:pre && npm version prerelease && npm run publish:post",
-    "release:patch": "npm run publish:pre && npm version patch && npm run publish:post",
-    "release:minor": "npm run publish:pre && npm version minor && npm run publish:post",
-    "release:major": "npm run publish:pre && npm version major && npm run publish:post",
+    "release:prerelease":
+      "npm run publish:pre && npm version prerelease && npm run publish:post",
+    "release:patch":
+      "npm run publish:pre && npm version patch && npm run publish:post",
+    "release:minor":
+      "npm run publish:pre && npm version minor && npm run publish:post",
+    "release:major":
+      "npm run publish:pre && npm version major && npm run publish:post",
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.js": [
-      "esw --fix",
-      "prettier --write",
-      "git add"
-    ]
+    "*.js": ["esw --fix", "prettier --write", "git add"]
   },
-  "files": [
-    "lib",
-    "LICENSE.md",
-    "README.md"
-  ],
+  "files": ["lib", "LICENSE.md", "README.md"],
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -45,13 +43,7 @@
     "type": "git",
     "url": "git+https://github.com/jeffijoe/mobx-task.git"
   },
-  "keywords": [
-    "async",
-    "mobx",
-    "state",
-    "loading",
-    "promise"
-  ],
+  "keywords": ["async", "mobx", "state", "loading", "promise"],
   "author": "Jeff Hansen <jeff@jeffijoe.com>",
   "license": "MIT",
   "bugs": {
@@ -95,11 +87,7 @@
     "babel": {
       "extends": "test/.babelrc"
     },
-    "source": [
-      "src/**/*.js"
-    ],
-    "require": [
-      "babel-register"
-    ]
+    "source": ["src/**/*.js"],
+    "require": ["babel-register"]
   }
 }
