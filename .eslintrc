@@ -1,6 +1,4 @@
 {
   "parser": "babel-eslint",
-  "extends": [
-    "standard"
-  ]
+  "extends": ["standard", "eslint-config-prettier"]
 }

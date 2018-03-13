@@ -1,13 +1,14 @@
 import test from 'ava'
 import task from '../src/task'
 
-test('#3: should not share state between instances', async (t) => {
+test('#3: should not share state between instances', async t => {
   class Subject {
-    constructor (result) {
+    constructor(result) {
       this.result = result
     }
 
-    @task func () {
+    @task
+    func() {
       return this.result
     }
   }
@@ -26,9 +27,9 @@ test('#3: should not share state between instances', async (t) => {
   t.is(b.func.result, 2)
 })
 
-test('#3: can still reassign the func', async (t) => {
+test('#3: can still reassign the func', async t => {
   class Subject {
-    constructor (result) {
+    constructor(result) {
       this.result = result
       this.func = this.func.wrap(fn => () => {
         this.intercepted = true
@@ -36,7 +37,8 @@ test('#3: can still reassign the func', async (t) => {
       })
     }
 
-    @task func () {
+    @task
+    func() {
       return this.result
     }
   }

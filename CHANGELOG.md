@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+* **Breaking**: upgrade to MobX v4, breaks compatibility with MobX <= 3
+
 ## 0.2.3
 
 * Legit fixed the `@autobind` issue that was supposed to be fixed in 0.2.2. My bad!

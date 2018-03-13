@@ -1,15 +1,17 @@
 import test from 'ava'
 import { promiseTry, proxyGetters } from '../src/utils'
 
-test('promiseTry catches all errors and rejects promise', async (t) => {
-  const err = await t.throws(promiseTry(() => {
-    throw new Error('hah')
-  }))
+test('promiseTry catches all errors and rejects promise', async t => {
+  const err = await t.throws(
+    promiseTry(() => {
+      throw new Error('hah')
+    })
+  )
 
   t.is(err.message, 'hah')
 })
 
-test('promiseTry returns a promise that resolves', async (t) => {
+test('promiseTry returns a promise that resolves', async t => {
   const result = await promiseTry(() => {
     return 42
   })
@@ -17,7 +19,7 @@ test('promiseTry returns a promise that resolves', async (t) => {
   t.is(result, 42)
 })
 
-test('proxyGetters defines getters for values on the given object', (t) => {
+test('proxyGetters defines getters for values on the given object', t => {
   const target = () => 42
   const values = {
     val1: 1,

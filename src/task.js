@@ -1,4 +1,4 @@
-const { observable, computed, action } = require('mobx')
+const { observable, action } = require('mobx')
 const { proxyGetters, promiseTry } = require('./utils')
 
 /**
@@ -7,7 +7,7 @@ const { proxyGetters, promiseTry } = require('./utils')
  * @param  {Function} fn
  * @return {Task}
  */
-function createTask (fn, opts) {
+function createTask(fn, opts) {
   opts = {
     swallow: false,
     state: 'pending',
@@ -22,11 +22,11 @@ function createTask (fn, opts) {
   /**
    * The actual task function.
    */
-  function task () {
+  function task() {
     const callCountWhenStarted = ++callCount
     return promiseTry(() => {
       task.setState({ state: 'pending', error: undefined, result: undefined })
-      return Promise.resolve(fn.apply(this, arguments)).then((result) => {
+      return Promise.resolve(fn.apply(this, arguments)).then(result => {
         // If we called the task again before the first
         // one completes, we don't want to set to resolved before the last call completes.
         if (callCountWhenStarted === callCount) {
@@ -44,18 +44,25 @@ function createTask (fn, opts) {
     })
   }
 
-  const stateGetter = (state) => computed(() => taskState.state === state)
   const taskStateSchema = {
     state: opts.state,
-    error: observable.ref(opts.error),
+    error: opts.error,
     result: opts.result,
-    pending: stateGetter('pending'),
-    resolved: stateGetter('resolved'),
-    rejected: stateGetter('rejected')
+    get pending() {
+      return taskState.state === 'pending'
+    },
+    get resolved() {
+      return taskState.state === 'resolved'
+    },
+    get rejected() {
+      return taskState.state === 'rejected'
+    }
   }
 
   const taskStateSchemaKeys = Object.keys(taskStateSchema)
-  const taskState = observable(taskStateSchema)
+  const taskState = observable.object(taskStateSchema, {
+    error: observable.ref
+  })
 
   setupTask(task, taskState, taskStateSchemaKeys, opts)
   return task
@@ -64,8 +71,8 @@ function createTask (fn, opts) {
 /**
  * Assigns the task methods and state to the given function.
  */
-function setupTask (fn, taskState, taskStateSchemaKeys, opts) {
-  const setup = (func) => setupTask(func, taskState, taskStateSchemaKeys, opts)
+function setupTask(fn, taskState, taskStateSchemaKeys, opts) {
+  const setup = func => setupTask(func, taskState, taskStateSchemaKeys, opts)
   proxyGetters(fn, taskState, taskStateSchemaKeys)
   Object.assign(fn, {
     /**
@@ -85,16 +92,18 @@ function setupTask (fn, taskState, taskStateSchemaKeys, opts) {
      * @return {Task}
      * Wrapped function as a task.
      */
-    wrap: (wrapper) => {
-      return setup(wrapper(function wrapped () {
-        return fn.apply(this, arguments)
-      }))
+    wrap: wrapper => {
+      return setup(
+        wrapper(function wrapped() {
+          return fn.apply(this, arguments)
+        })
+      )
     },
     /**
      * Assigns the given properties to the task.
      * E.g. task.setState({ state: 'resolved', result: 1337 })
      */
-    setState: action((opts) => {
+    setState: action(opts => {
       Object.assign(taskState, opts)
       return fn
     }),
@@ -102,7 +111,7 @@ function setupTask (fn, taskState, taskStateSchemaKeys, opts) {
      * Given an object, returns the value for the key which equals the
      * current state, or undefined if not specified.
      */
-    match: (obj) => {
+    match: obj => {
       const state = taskState.state
       const match = obj[state]
 
@@ -138,19 +147,19 @@ function setupTask (fn, taskState, taskStateSchemaKeys, opts) {
 /**
  * Returns a function, which returns either a decorator, a task, or a decorator factory.
  */
-function taskCreatorFactory (opts) {
+function taskCreatorFactory(opts) {
   /**
    * Decorator to make async functions "so fucking graceful", by maintaining observables for errors
    * and running state.
    */
-  return function task (arg1, arg2, arg3) {
+  return function task(arg1, arg2, arg3) {
     if (typeof arg1 === 'function') {
       // regular invocation
       return createTask(arg1, { ...opts, ...arg2 })
     }
 
-    const makeDecorator = (innerOpts) => {
-      return function decorator (target, name, descriptor) {
+    const makeDecorator = innerOpts => {
+      return function decorator(target, name, descriptor) {
         let get = descriptor.get
         if (descriptor.value) {
           const fn = descriptor.value
@@ -165,7 +174,7 @@ function taskCreatorFactory (opts) {
         // Credit: autobind-decorator source
         let definingProperty = false
         return {
-          get: function getter () {
+          get: function getter() {
             /* istanbul ignore next */
             if (definingProperty) {
               return get.apply(this)
@@ -182,7 +191,7 @@ function taskCreatorFactory (opts) {
             definingProperty = false
             return wrapped
           },
-          set: function setter (newValue) {
+          set: function setter(newValue) {
             Object.defineProperty(this, name, {
               configurable: true,
               writable: true,

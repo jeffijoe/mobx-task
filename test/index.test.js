@@ -3,7 +3,7 @@ import * as mobxTask from '../src/index'
 
 const common = require('../src/index')
 
-test('exports task', (t) => {
+test('exports task', t => {
   t.truthy(mobxTask.task)
   t.truthy(common.task)
 })

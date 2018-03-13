@@ -10,8 +10,8 @@
  * @params {string[]} keys
  * The keys to proxy.
  */
-module.exports.proxyGetters = function proxyGetters (target, obj, keys) {
-  keys.map((key) => {
+module.exports.proxyGetters = function proxyGetters(target, obj, keys) {
+  keys.map(key => {
     Object.defineProperty(target, key, {
       get: () => obj[key]
     })
@@ -21,7 +21,7 @@ module.exports.proxyGetters = function proxyGetters (target, obj, keys) {
 /**
  * Invokes the function in a promise-safe way.
  */
-module.exports.promiseTry = function promiseTry (fn) {
+module.exports.promiseTry = function promiseTry(fn) {
   return new Promise((resolve, reject) => {
     try {
       resolve(fn())

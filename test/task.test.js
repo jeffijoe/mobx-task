@@ -6,7 +6,7 @@ import memoize from 'lodash/memoize'
 import autobind from 'autobind-decorator'
 import { spy } from 'sinon'
 
-test('goes from pending -> resolved', async function (t) {
+test('goes from pending -> resolved', async function(t) {
   const d = defer()
   const base = spy(() => d.promise)
   const fn = task(base)
@@ -27,7 +27,7 @@ test('goes from pending -> resolved', async function (t) {
   t.is(fn.state, 'resolved')
 })
 
-test('goes from pending -> rejected on error', async function (t) {
+test('goes from pending -> rejected on error', async function(t) {
   const d = defer()
   const base = spy(() => d.promise)
   const fn = task(base)
@@ -49,7 +49,7 @@ test('goes from pending -> rejected on error', async function (t) {
   t.is(fn.state, 'rejected')
 })
 
-test('goes from resolved -> pending -> resolved when state is set', async function (t) {
+test('goes from resolved -> pending -> resolved when state is set', async function(t) {
   const d = defer()
   const fn = task(() => d.promise, { state: 'resolved' })
 
@@ -61,7 +61,7 @@ test('goes from resolved -> pending -> resolved when state is set', async functi
   t.is(fn.resolved, true)
 })
 
-test('state is reactive', (t) => {
+test('state is reactive', t => {
   const fn = task(() => 1337)
   const isPending = spy()
   const isResolved = spy()
@@ -80,7 +80,7 @@ test('state is reactive', (t) => {
   t.is(isRejected.callCount, 2)
 })
 
-test('setState lets me modify the internal state', function (t) {
+test('setState lets me modify the internal state', function(t) {
   const fn = task(() => 1337)
   t.is(fn.pending, true)
   fn.setState({ state: 'resolved', result: 123 })
@@ -88,7 +88,7 @@ test('setState lets me modify the internal state', function (t) {
   t.is(fn.resolved, true)
 })
 
-test('there are shortcuts to check the state.', function (t) {
+test('there are shortcuts to check the state.', function(t) {
   const fn = task(() => 1337)
   t.is(fn.state, 'pending')
   t.is(fn.pending, true)
@@ -108,12 +108,12 @@ test('there are shortcuts to check the state.', function (t) {
   t.is(fn.rejected, true)
 })
 
-test('task.resolved shorthand sets state: resolved', (t) => {
+test('task.resolved shorthand sets state: resolved', t => {
   const fn = task.resolved(() => 1337)
   t.is(fn.resolved, true)
 })
 
-test('swallow: true does not throw exceptions', async (t) => {
+test('swallow: true does not throw exceptions', async t => {
   const err = new Error('haha shiit')
   const fn = task(() => Promise.reject(err), { swallow: true })
   const result = await fn(123)
@@ -122,10 +122,11 @@ test('swallow: true does not throw exceptions', async (t) => {
   t.is(fn.error, err)
 })
 
-test('regular decorator', async (t) => {
+test('regular decorator', async t => {
   const d = defer()
   class Test {
-    @task fn (arg) {
+    @task
+    fn(arg) {
       return d.promise.then(() => arg)
     }
   }
@@ -142,10 +143,10 @@ test('regular decorator', async (t) => {
   t.is(test.fn.result, 123)
 })
 
-test('decorator factory', (t) => {
+test('decorator factory', t => {
   class Test {
-    @task({ state: 'resolved', result: 1337 }) fn (arg) {
-    }
+    @task({ state: 'resolved', result: 1337 })
+    fn(arg) {}
   }
 
   const test = new Test()
@@ -153,14 +154,14 @@ test('decorator factory', (t) => {
   t.is(test.fn.result, 1337)
 })
 
-test('preconfigured decorator', (t) => {
+test('preconfigured decorator', t => {
   const error = new Error('hah')
   class Test {
-    @task.resolved fnResolved () {
-    }
+    @task.resolved
+    fnResolved() {}
 
-    @task.rejected({ error }) fnRejected () {
-    }
+    @task.rejected({ error })
+    fnRejected() {}
   }
 
   const test = new Test()
@@ -170,8 +171,8 @@ test('preconfigured decorator', (t) => {
   t.is(test.fnRejected.error, error)
 })
 
-test('bind returns a task function', async (t) => {
-  const fn = task(function (arg1) {
+test('bind returns a task function', async t => {
+  const fn = task(function(arg1) {
     return [this, arg1]
   })
   const that = {}
@@ -181,14 +182,14 @@ test('bind returns a task function', async (t) => {
   t.is(boundResult[1], 1)
 })
 
-test('wrap returns a task function', async (t) => {
+test('wrap returns a task function', async t => {
   const fn = task(() => 42).wrap(spy)
   t.is(await fn(), 42)
   t.is(fn.callCount, 1)
   t.is(fn.resolved, true)
 })
 
-test('can be memoized', async (t) => {
+test('can be memoized', async t => {
   let i = 1
   const fn = task(() => i++).wrap(memoize)
   t.is(await fn(), 1)
@@ -196,13 +197,15 @@ test('can be memoized', async (t) => {
   t.is(fn.resolved, true)
 })
 
-test('can decorate an already decorated method', async (t) => {
+test('can decorate an already decorated method', async t => {
   /**
    * For this to work the task decorator has
    * to be the last decorator to run (declared first)
    */
   class Test {
-    @task @action.bound method () {
+    @task
+    @action.bound
+    method() {
       return this
     }
   }
@@ -215,7 +218,7 @@ test('can decorate an already decorated method', async (t) => {
   t.is(await test.method(), test)
 })
 
-test('can be tacked onto an observable', async (t) => {
+test('can be tacked onto an observable', async t => {
   const store = observable({
     todos: [],
     fetchTodos: task(async () => {
@@ -228,14 +231,15 @@ test('can be tacked onto an observable', async (t) => {
   t.is(store.fetchTodos.resolved, true)
 })
 
-test('match returns the case for the current state', (t) => {
+test('match returns the case for the current state', t => {
   const fn = task(() => undefined)
 
-  const run = () => fn.match({
-    pending: () => 1,
-    resolved: (value) => value,
-    rejected: (err) => err.message
-  })
+  const run = () =>
+    fn.match({
+      pending: () => 1,
+      resolved: value => value,
+      rejected: err => err.message
+    })
 
   t.is(run(), 1)
 
@@ -246,13 +250,14 @@ test('match returns the case for the current state', (t) => {
   t.is(run(), 'hah')
 })
 
-test('match returns undefined if there is no case', (t) => {
+test('match returns undefined if there is no case', t => {
   const fn = task(() => undefined)
 
-  const run = () => fn.match({
-    resolved: (value) => value,
-    rejected: (err) => err.message
-  })
+  const run = () =>
+    fn.match({
+      resolved: value => value,
+      rejected: err => err.message
+    })
 
   t.is(run(), undefined)
 
@@ -263,19 +268,23 @@ test('match returns undefined if there is no case', (t) => {
   t.is(run(), 'hah')
 })
 
-test('calling the function multiple times will only trigger setState:resolved once', async (t) => {
-  const fn = task((d) => d.promise)
+test('calling the function multiple times will only trigger setState:resolved once', async t => {
+  const fn = task(d => d.promise)
   const d1 = defer()
   const d2 = defer()
 
   const p1 = fn(d1)
   const p2 = fn(d2)
 
-  await new Promise((resolve) => setTimeout(resolve, 20))
+  await new Promise(resolve => setTimeout(resolve, 20))
 
   d1.resolve(1)
   const r1 = await p1
-  t.is(fn.pending, true, 'should still be pending cause we started another task')
+  t.is(
+    fn.pending,
+    true,
+    'should still be pending cause we started another task'
+  )
 
   d2.resolve(2)
 
@@ -286,30 +295,38 @@ test('calling the function multiple times will only trigger setState:resolved on
   t.is(r2, 2)
 })
 
-test('calling the function multiple times will not trigger setState:rejected if not the last call', async (t) => {
-  const fn = task((d) => d.promise)
+test('calling the function multiple times will not trigger setState:rejected if not the last call', async t => {
+  const fn = task(d => d.promise)
   const d1 = defer()
   const d2 = defer()
 
   const p1 = fn(d1)
   const p2 = fn(d2)
 
-  await new Promise((resolve) => setTimeout(resolve, 20))
+  await new Promise(resolve => setTimeout(resolve, 20))
 
   d1.reject(new Error('Oh shit'))
   const r1 = await t.throws(p1)
-  t.is(fn.pending, true, 'should still be pending cause we started another task')
+  t.is(
+    fn.pending,
+    true,
+    'should still be pending cause we started another task'
+  )
 
   d2.resolve(2)
 
   const r2 = await p2
-  t.is(fn.resolved, true, 'should be resolved after last call is done because last call was fine')
+  t.is(
+    fn.resolved,
+    true,
+    'should be resolved after last call is done because last call was fine'
+  )
 
   t.is(r1.message, 'Oh shit')
   t.is(r2, 2)
 })
 
-test('catches sync errors', async (t) => {
+test('catches sync errors', async t => {
   const fn = task(() => {
     throw new Error('hah')
   })
@@ -319,10 +336,13 @@ test('catches sync errors', async (t) => {
   t.is(fn.error.message, 'hah')
 })
 
-test('reset() resets the state to resolved with result', async (t) => {
-  const fn = task(() => {
-    return 1337
-  }, { state: 'resolved', result: 42 })
+test('reset() resets the state to resolved with result', async t => {
+  const fn = task(
+    () => {
+      return 1337
+    },
+    { state: 'resolved', result: 42 }
+  )
   t.is(fn.result, 42)
 
   const result = await fn()
@@ -334,7 +354,7 @@ test('reset() resets the state to resolved with result', async (t) => {
   t.is(fn.result, 42)
 })
 
-test('reset() resets the state to pending', async (t) => {
+test('reset() resets the state to pending', async t => {
   const fn = task(() => {
     return 1337
   })
@@ -349,14 +369,16 @@ test('reset() resets the state to pending', async (t) => {
   t.is(fn.state, 'pending')
 })
 
-test('autobind works', async (t) => {
+test('autobind works', async t => {
   @autobind
   class Test {
-    constructor () {
+    constructor() {
       this.value = 42
     }
 
-    @task @autobind func () {
+    @task
+    @autobind
+    func() {
       return this.value
     }
   }
@@ -369,9 +391,10 @@ test('autobind works', async (t) => {
   t.is(sub.func.state, 'resolved')
 })
 
-test('can reassign decorated method', async (t) => {
+test('can reassign decorated method', async t => {
   class Test {
-    @task method () {}
+    @task
+    method() {}
   }
 
   const sub = new Test()
@@ -379,9 +402,12 @@ test('can reassign decorated method', async (t) => {
   t.is(sub.method, 123)
 })
 
-test('decorator value is cached', async (t) => {
+test('decorator value is cached', async t => {
   class Test {
-    @task method () { return 42 }
+    @task
+    method() {
+      return 42
+    }
   }
 
   const sub = new Test()
