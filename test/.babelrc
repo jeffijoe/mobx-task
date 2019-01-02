@@ -1,5 +1,0 @@
-{
-  "sourceMaps": "both",
-  "presets": ["es2015", "stage-3"],
-  "plugins": ["transform-decorators-legacy", "transform-object-rest-spread", "transform-runtime"]
-}

@@ -11,6 +11,7 @@ function createTask(fn, opts) {
   opts = {
     swallow: false,
     state: 'pending',
+    args: [],
     ...opts
   }
 
@@ -25,7 +26,12 @@ function createTask(fn, opts) {
   function task() {
     const callCountWhenStarted = ++callCount
     return promiseTry(() => {
-      task.setState({ state: 'pending', error: undefined, result: undefined })
+      task.setState({
+        state: 'pending',
+        error: undefined,
+        result: undefined,
+        args: Array.from(arguments)
+      })
       return Promise.resolve(fn.apply(this, arguments)).then(result => {
         // If we called the task again before the first
         // one completes, we don't want to set to resolved before the last call completes.
@@ -48,6 +54,7 @@ function createTask(fn, opts) {
     state: opts.state,
     error: opts.error,
     result: opts.result,
+    args: opts.args,
     get pending() {
       return taskState.state === 'pending'
     },
@@ -60,9 +67,17 @@ function createTask(fn, opts) {
   }
 
   const taskStateSchemaKeys = Object.keys(taskStateSchema)
-  const taskState = observable.object(taskStateSchema, {
-    error: observable.ref
-  })
+  const taskState = observable.object(
+    taskStateSchema,
+    {
+      error: observable.ref,
+      result: observable.ref,
+      args: observable.ref
+    },
+    {
+      deep: false
+    }
+  )
 
   setupTask(task, taskState, taskStateSchemaKeys, opts)
   return task
@@ -119,15 +134,17 @@ function setupTask(fn, taskState, taskStateSchemaKeys, opts) {
         return undefined
       }
 
-      if (state === 'resolved') {
-        return match(taskState.result)
+      switch (state) {
+        case 'pending':
+          return match.apply(null, taskState.args)
+        case 'resolved':
+          return match(taskState.result)
+        case 'rejected':
+          return match(taskState.error)
+        /* istanbul ignore next */
+        default:
+          return match()
       }
-
-      if (state === 'rejected') {
-        return match(taskState.error)
-      }
-
-      return match()
     },
     /**
      * Resets the state to what it was when initialized.
