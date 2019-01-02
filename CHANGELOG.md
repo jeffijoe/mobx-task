@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Remove babel runtime dependency, this was a mistake.
+
 ## 1.0.0
 
 - **Breaking**: upgrade to MobX v5. No changes made to the code, should work with MobX v4 as well, but marking as breaking just in case.
