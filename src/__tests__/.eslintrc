@@ -1,4 +1,5 @@
 {
+  "env": { "jest": true },
   "rules": {
     "no-unused-expressions": 0
   }

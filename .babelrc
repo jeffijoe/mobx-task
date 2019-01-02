@@ -1,5 +1,13 @@
 {
   "sourceMaps": "both",
-  "presets": ["es2015"],
-  "plugins": ["transform-object-rest-spread"]
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    [
+      "@babel/plugin-proposal-decorators",
+      {
+        "legacy": true
+      }
+    ]
+  ],
+  "presets": ["@babel/preset-env"]
 }
