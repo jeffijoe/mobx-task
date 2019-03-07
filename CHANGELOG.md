@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Update packages, attempt to fix CI build
+
 ## 1.0.1
 
 - Remove babel runtime dependency, this was a mistake.
