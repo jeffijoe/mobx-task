@@ -27,6 +27,7 @@ Table of Contents
          * [`state`](#state)
          * [`pending`, `resolved`, `rejected`](#pending-resolved-rejected)
          * [`result`](#result)
+         * [`args`](#args)
          * [`error`](#error)
          * [`match()`](#match)
          * [`wrap()`](#wrap)
@@ -367,6 +368,10 @@ Computed shorthands for `state`. E.g. `pending = state === 'pending'`
 
 Set after the task completes. If the task fails, it is set to `undefined`.
 
+### `args`
+
+An array of arguments that were used when the task function was invoked last.
+
 ### `error`
 
 Set if the task fails. If the task succeeds, it is set to `undefined`.
@@ -378,10 +383,10 @@ Utility for pattern matching on the state.
 Example:
 
 ```
-const func = task(() => 42)
+const func = task((arg1, arg2, arg3, ..asManyAsYouWant) => 42)
 
 const result = func.match({
-  pending: () => 'working on it',
+  pending: (arg1, arg2, arg3, ...asManyAsYouWant) => 'working on it',
   rejected: (err) => 'failed: ' + err.message,
   resolved: (answer) => `The answer to the universe and everything: ${answer}`
 })
