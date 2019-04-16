@@ -9,6 +9,7 @@
 [![npm](https://img.shields.io/npm/l/mobx-task.svg?maxAge=1000)](https://github.com/jeffijoe/mobx-task/blob/master/LICENSE.md)
 [![node](https://img.shields.io/node/v/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![TypeScript definitions on DefinitelyTyped](https://definitelytyped.org/badges/standard-flat.svg)](http://definitelytyped.org)
 
 Takes the suck out of managing state for async functions in MobX.
 
@@ -38,6 +39,7 @@ Table of Contents
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
       * [Using the decorator with `autobind-decorator`](#using-the-decorator-with-autobind-decorator)
+      * [Using with `typescript`](#using-with-typescript)
    * [Author](#author)
 
 # Installation
@@ -552,6 +554,51 @@ woohoo() // 42
 ```
 
 Alternatively, use `this.boo = this.boo.bind(this)` in the constructor.
+
+## Using with `typescript`
+
+Best way to work with typescript is to install `@types/mobx-task`. Definitions covers most use cases. The tricky part is decorators because they are not able to change the type of the decorated target. You will have to do type assertion or use plain observables.
+
+```
+npm install --save-dev @types/mobx-task
+```
+
+Example:
+
+```ts
+class Test {
+  @task taskClassMethod(arg1: string, arg2: number) {
+    let result: boolean
+    ...
+    return result
+  }
+  
+  @task assertTypeHere = <Task<boolean, [string, number]>>(arg1: string, arg2: number) => {
+    let result: boolean
+    ...
+    return result
+  }
+  
+  @task assertTypeHereWithAs = (arg1: string, arg2: number) => {
+    let result: boolean
+    ...
+    return result
+  } as Task<boolean, [string, number]>
+}
+
+const test = new Test()
+
+// dont care about task methods, props and return value and type
+const doSomething = async () => {
+  await test.taskClassMethod('a', 1)
+  ...
+}
+
+// want to use task props and returned promise
+(test.taskClassMethod as Task)("one", 2).then(...) // Task<any, any[]>
+const {result} = <Task<Result>>test.taskClassMethod // Task<Result, any[]>
+const {args} = test.taskClassMethod as Task<void, [string]>
+```
 
 # Author
 
