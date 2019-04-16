@@ -573,17 +573,17 @@ class Test {
     return result
   }
   
-  @task assertTypeHere = <Task<boolean, [string, number]>>(arg1: string, arg2: number) => {
+  @task assertTypeHere = <Task<boolean, [string, number]>>((arg1: string, arg2: number) => {
     let result: boolean
     ...
     return result
-  }
+  })
   
-  @task assertTypeHereWithAs = (arg1: string, arg2: number) => {
+  @task assertTypeHereWithAs = ((arg1: string, arg2: number) => {
     let result: boolean
     ...
     return result
-  } as Task<boolean, [string, number]>
+  }) as Task<boolean, [string, number]>
 }
 
 const test = new Test()
