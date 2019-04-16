@@ -38,6 +38,7 @@ Table of Contents
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
       * [Using the decorator with `autobind-decorator`](#using-the-decorator-with-autobind-decorator)
+      * [Using with `typescript`](#using-with-typescript)
    * [Author](#author)
 
 # Installation
@@ -552,6 +553,53 @@ woohoo() // 42
 ```
 
 Alternatively, use `this.boo = this.boo.bind(this)` in the constructor.
+
+## Using with `typescript`
+
+Best way to work with typescript is to install `@types/mobx-task`. Definitions covers most use cases. The tricky part are
+decorators because they are not able to change type of decorated element. You will have to do type assertion or use plain
+observables.
+
+```
+npm install --save-dev @types/mobx-task
+```
+
+Example:
+
+```ts
+class Test {
+  @task taskClassMethod(arg1: string, arg2: number) {
+    let result: boolean
+    ...
+    return result
+  }
+  
+  @task assertTypeHere = <Task<boolean, [string, number]>>(arg1: string, arg2: number) => {
+    let result: boolean
+    ...
+    return result
+  }
+  
+  @task assertTypeHereWithAs = (arg1: string, arg2: number) => {
+    let result: boolean
+    ...
+    return result
+  } as Task<boolean, [string, number]>
+}
+
+const test = new Test()
+
+// dont care about task methods, props and return value and type
+const doSomething = async () => {
+  await test.taskClassMethod('a', 1)
+  ...
+}
+
+// want to use task props and returned promise
+(test.taskClassMethod as Task).then(...) // Task<any, any[]>
+const {result} = <Task<Result>>test.taskClassMethod // Task<Result, any[]>
+const {args} = test.taskClassMethod as Task<void, [string]>
+```
 
 # Author
 
