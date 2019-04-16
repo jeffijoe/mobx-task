@@ -557,9 +557,7 @@ Alternatively, use `this.boo = this.boo.bind(this)` in the constructor.
 
 ## Using with `typescript`
 
-Best way to work with typescript is to install `@types/mobx-task`. Definitions covers most use cases. The tricky part is
-decorators because they are not able to change the type of the decorated target. You will have to do type assertion or use plain
-observables.
+Best way to work with typescript is to install `@types/mobx-task`. Definitions covers most use cases. The tricky part is decorators because they are not able to change the type of the decorated target. You will have to do type assertion or use plain observables.
 
 ```
 npm install --save-dev @types/mobx-task
