@@ -597,7 +597,7 @@ const doSomething = async () => {
 }
 
 // want to use task props and returned promise
-(test.taskClassMethod as Task).then(...) // Task<any, any[]>
+(test.taskClassMethod as Task)("one", 2).then(...) // Task<any, any[]>
 const {result} = <Task<Result>>test.taskClassMethod // Task<Result, any[]>
 const {args} = test.taskClassMethod as Task<void, [string]>
 ```
