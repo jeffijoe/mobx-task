@@ -9,6 +9,7 @@
 [![npm](https://img.shields.io/npm/l/mobx-task.svg?maxAge=1000)](https://github.com/jeffijoe/mobx-task/blob/master/LICENSE.md)
 [![node](https://img.shields.io/node/v/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+[![TypeScript definitions on DefinitelyTyped](https://definitelytyped.org/badges/standard-flat.svg)](http://definitelytyped.org)
 
 Takes the suck out of managing state for async functions in MobX.
 
