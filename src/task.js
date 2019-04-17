@@ -178,11 +178,11 @@ function taskCreatorFactory(opts) {
     const makeDecorator = innerOpts => {
       return function decorator(target, name, descriptor) {
         let get = descriptor.get
-        if (descriptor.value) {
+        if (descriptor.value || descriptor.initializer) {
           const fn = descriptor.value
           delete descriptor.writable
           delete descriptor.value
-          get = () => fn
+          get = fn ? () => fn : descriptor.initializer
         }
 
         // In IE11 calling Object.defineProperty has a side-effect of evaluating the

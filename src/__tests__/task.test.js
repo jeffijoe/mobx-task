@@ -421,3 +421,27 @@ test('decorator value is cached', async () => {
   expect(await sub.method()).toBe(42)
   expect(await sub.method()).toBe(42)
 })
+
+test('decorator supports fields with functions', async () => {
+  class Test {
+    @task method = function() {
+      return 42
+    }
+  }
+
+  const sub = new Test()
+  expect(await sub.method()).toBe(42)
+})
+
+test('decorator supports fields with arrow functions', async () => {
+  class Test {
+    getValue() {
+      return 42
+    }
+
+    @task method = () => this.getValue()
+  }
+
+  const sub = new Test()
+  expect(await sub.method()).toBe(42)
+})
