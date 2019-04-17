@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Add support for fields using arrow functions ([#12](https://github.com/jeffijoe/mobx-task/pull/12) by [@JulianWielga](https://github.com/JulianWielga))
+- Update packages
+
 ## 1.0.2
 
 - Update packages, attempt to fix CI build
