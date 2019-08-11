@@ -9,6 +9,7 @@ const { proxyGetters, promiseTry } = require('./utils')
  */
 function createTask(fn, opts) {
   opts = {
+    wrappedFnName: fn.name ? fn.name : 'unnamed function',
     swallow: false,
     state: 'pending',
     args: [],
@@ -118,7 +119,7 @@ function setupTask(fn, taskState, taskStateSchemaKeys, opts) {
      * Assigns the given properties to the task.
      * E.g. task.setState({ state: 'resolved', result: 1337 })
      */
-    setState: action(opts => {
+    setState: action(opts.wrappedFnName, opts => {
       Object.assign(taskState, opts)
       return fn
     }),
