@@ -118,7 +118,7 @@ function setupTask(fn, taskState, taskStateSchemaKeys, opts) {
      * Assigns the given properties to the task.
      * E.g. task.setState({ state: 'resolved', result: 1337 })
      */
-    setState: action(opts => {
+    setState: action('setState', opts => {
       Object.assign(taskState, opts)
       return fn
     }),
