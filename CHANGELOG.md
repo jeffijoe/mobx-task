@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+- Add name argument for `setState` action ([#18](https://github.com/jeffijoe/mobx-task/pull/18) by [@cyclops26](https://github.com/cyclops26))
+- Update packages
+
 ## 1.0.3
 
 - Add support for fields using arrow functions ([#12](https://github.com/jeffijoe/mobx-task/pull/12) by [@JulianWielga](https://github.com/JulianWielga))
