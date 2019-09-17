@@ -9,8 +9,6 @@
     "target": "es2015",
     "module": "commonjs",
     "moduleResolution": "node",
-    "importHelpers": true,
-    "noEmitHelpers": true,
     "sourceMap": true,
     "declaration": true,
     "skipLibCheck": true,

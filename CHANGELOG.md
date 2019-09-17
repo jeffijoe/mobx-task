@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0
+
+- TypeScript definitions for public API based on the DefinitelyTyped ones.
+- Ported codebase to basic TypeScript. A lot of exotic things going on, so definitely not idiomatic.
+- Added `TaskGroup` for combining task result reactions into a single state.
+
 ## 1.0.4
 
 - Add name argument for `setState` action ([#18](https://github.com/jeffijoe/mobx-task/pull/18) by [@cyclops26](https://github.com/cyclops26))

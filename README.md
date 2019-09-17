@@ -7,9 +7,6 @@
 [![Coveralls](https://img.shields.io/coveralls/jeffijoe/mobx-task.svg?maxAge=1000)](https://coveralls.io/github/jeffijoe/mobx-task)
 [![npm](https://img.shields.io/npm/dt/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
 [![npm](https://img.shields.io/npm/l/mobx-task.svg?maxAge=1000)](https://github.com/jeffijoe/mobx-task/blob/master/LICENSE.md)
-[![node](https://img.shields.io/node/v/mobx-task.svg?maxAge=1000)](https://www.npmjs.com/package/mobx-task)
-[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
-[![TypeScript definitions on DefinitelyTyped](https://definitelytyped.org/badges/standard-flat.svg)](http://definitelytyped.org)
 
 Takes the suck out of managing state for async functions in MobX.
 
@@ -21,6 +18,7 @@ Table of Contents
    * [Full example with classes and decorators](#full-example-with-classes-and-decorators)
    * [Full example with plain observables](#full-example-with-plain-observables)
    * [How does it work?](#how-does-it-work)
+   * [Task Groups](#task-groups)
    * [API documentation](#api-documentation)
       * [The task factory](#the-task-factory)
       * [As a decorator](#as-a-decorator)
@@ -35,6 +33,7 @@ Table of Contents
          * [`setState()`](#setstate)
          * [`bind()`](#bind)
          * [`reset()`](#reset)
+       * [`TaskGroup`](#taskgroup)
    * [Gotchas](#gotchas)
       * [Wrapping the task function](#wrapping-the-task-function)
       * [Using the decorator on React Components](#using-the-decorator-on-react-components)
@@ -248,6 +247,54 @@ autorun(() => {
 func().then(todos => { /*...*/ })
 ```
 
+# Task Groups
+
+<small>since `mobx-task v2.0.0` </small>
+
+A `TaskGroup` is useful when you want to track pending, resolved and rejected state for multiple tasks but treat them as one.
+
+Under the hood, a `TaskGroup` reacts to the start of any of the tasks (when `pending` flips to `true`), tracks the latest started task, and proxies all getters
+to it. The first `pending` task (or the first task in the input array, if none are `pending`) is used as the initial task to proxy to.
+
+**IMPORTANT**: Running the tasks concurrently will lead to wonky results. The intended use is for
+tracking `pending`, `resolved` and `rejected` states of the _last run task_. You should prevent your users from 
+concurrently running tasks in the group.
+
+```js
+import { task, TaskGroup } from 'mobx-task'
+
+const toggleTodo = task.resolved((id) => api.toggleTodo(id))
+const deleteTodo = task.resolved((id) => { throw new Error('deleting todos is for quitters') })
+
+const actions = TaskGroup([
+  toggleTodo,
+  deleteTodo
+])
+
+autorun(() => {
+  const whatsGoingOn = actions.match({
+    pending: () => 'Todo is being worked on',
+    resolved: () => 'Todo is ready to be worked on',
+    rejected: (err) => `Something failed on the todo: ${err.message}`
+  })
+  console.log(whatsGoingOn)
+})
+
+// initial log from autorun setup
+// <- Todo is ready to be worked on
+
+await toggleTodo('some-id')
+
+// <- Todo is being worked on
+// ...
+// <- Todo is ready to be worked on
+
+await deleteTodo('some-id')
+// <- Todo is being worked on
+// ...
+// <- Something failed on the todo: deleting todos is for quitters
+```
+
 # API documentation
 
 There's only a single exported member; `task`.
@@ -452,6 +499,27 @@ console.log(bound.pending) // true
 Resets the state to what it was when the task was initialized.
 
 This means if you use `const t = task.resolved(fn)`, calling `t.reset()` will set the state to `resolved`.
+
+## `TaskGroup`
+
+Creates a `TaskGroup`. Takes an array of tasks to track. Implements the readable parts of the `Task`.
+
+Uses the first task in the array as the proxy target.
+
+```js
+import { task, TaskGroup }  from 'mobx-task'
+
+const task1 = task(() => 42)
+const task2 = task(() => 1337)
+const group = TaskGroup([
+  task1,
+  task2
+])
+
+console.log(group.state)
+console.log(group.resolved)
+console.log(group.result)
+```
 
 # Gotchas
 
