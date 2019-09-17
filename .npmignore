@@ -1,5 +1,6 @@
 examples
-test
-src
 coverage
-.nyc-output
+.test-out
+src
+**/__tests__/**
+**/__helpers__/**

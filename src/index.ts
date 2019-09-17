@@ -4,4 +4,5 @@
  * Copyright © Jeff Hansen 2017.
  * MIT licensed.
  */
-module.exports.task = require('./task')
+export * from './task'
+export * from './task-group'
