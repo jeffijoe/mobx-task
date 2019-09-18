@@ -1,15 +1,30 @@
 # Oh yeah!
 language: node_js
+cache:
+  directories:
+    - node_modules
+notifications:
+  email: false
 
 # Add additional versions here as appropriate.
 node_js:
-  - "10"
+  - 'stable'
+  - '10'
+  - '8'
 
 # Lint errors should trigger a failure.
-before_script: npm run lint
+before_script:
+  - npm run lint
+  - npm run build
 
 # Runs the coverage script (which runs the tests)
 script: npm run cover
 
 # Code coverage
-after_success: npm run coveralls
+after_success:
+  - npm run coveralls
+  - npm run semantic-release
+
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/

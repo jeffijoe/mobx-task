@@ -1,14 +1,15 @@
 import { reaction, action, observable } from 'mobx'
-import task from '../task'
-import defer from 'promise-defer'
-import memoize from 'lodash/memoize'
+import { task } from '../index'
+import { memoize } from 'lodash'
 import autobind from 'autobind-decorator'
-import { spy } from 'sinon'
 import { throws } from 'smid'
+import { defer } from './defer'
+
+// tslint:disable:await-promise no-floating-promises
 
 test('goes from pending -> resolved', async () => {
   const d = defer()
-  const base = spy(() => d.promise)
+  const base = jest.fn((_a: number, _b: number, _c: number) => d.promise)
   const fn = task(base)
   expect(fn.state === 'pending').toBe(true)
   expect(fn.pending === true).toBe(true)
@@ -29,7 +30,7 @@ test('goes from pending -> resolved', async () => {
 
 test('goes from pending -> rejected on error', async () => {
   const d = defer()
-  const base = spy(() => d.promise)
+  const base = jest.fn((_a: number, _b: number, _c: number) => d.promise)
   const fn = task(base)
   expect(fn.state === 'pending').toBe(true)
   expect(fn.pending === true).toBe(true)
@@ -39,7 +40,7 @@ test('goes from pending -> rejected on error', async () => {
   expect(fn.pending === true).toBe(true)
   const err = new Error('hah')
   d.reject(err)
-  const result = await throws(() => p)
+  const result = await throws(p)
   expect(result).toBe(err)
   expect(fn.pending).toBe(false)
   expect(fn.rejected).toBe(true)
@@ -63,9 +64,9 @@ test('goes from resolved -> pending -> resolved when state is set', async () => 
 
 test('state is reactive', () => {
   const fn = task(() => 1337)
-  const isPending = spy()
-  const isResolved = spy()
-  const isRejected = spy()
+  const isPending = jest.fn()
+  const isResolved = jest.fn()
+  const isRejected = jest.fn()
   reaction(() => fn.pending, isPending)
   reaction(() => fn.resolved, isResolved)
   reaction(() => fn.rejected, isRejected)
@@ -75,9 +76,9 @@ test('state is reactive', () => {
   fn.setState({ state: 'pending' })
 
   // these goes from false to true, and from true to false
-  expect(isPending.callCount).toBe(2)
-  expect(isResolved.callCount).toBe(2)
-  expect(isRejected.callCount).toBe(2)
+  expect(isPending).toHaveBeenCalledTimes(2)
+  expect(isResolved).toHaveBeenCalledTimes(2)
+  expect(isRejected).toHaveBeenCalledTimes(2)
 })
 
 test('setState lets me modify the internal state', () => {
@@ -115,7 +116,7 @@ test('task.resolved shorthand sets state: resolved', () => {
 
 test('swallow: true does not throw exceptions', async () => {
   const err = new Error('haha shiit')
-  const fn = task(() => Promise.reject(err), { swallow: true })
+  const fn = task((_a: number) => Promise.reject(err), { swallow: true })
   const result = await fn(123)
   expect(result).toBe(undefined)
   expect(fn.result).toBe(undefined)
@@ -126,58 +127,64 @@ test('regular decorator', async () => {
   const d = defer()
   class Test {
     @task
-    fn(arg) {
+    fn(arg: any) {
       return d.promise.then(() => arg)
     }
   }
 
   const test = new Test()
-  expect(test.fn.pending).toBe(true)
+  expect((test.fn as any).pending).toBe(true)
 
   const p = test.fn(123)
-  expect(test.fn.pending).toBe(true)
+  expect((test.fn as any).pending).toBe(true)
   d.resolve(1337)
   const result = await p
   expect(result).toBe(123)
-  expect(test.fn.resolved).toBe(true)
-  expect(test.fn.result).toBe(123)
+  expect((test.fn as any).resolved).toBe(true)
+  expect((test.fn as any).result).toBe(123)
 })
 
 test('decorator factory', () => {
   class Test {
     @task({ state: 'resolved', result: 1337 })
-    fn(arg) {}
+    fn(_arg: any) {
+      /**/
+    }
   }
 
   const test = new Test()
-  expect(test.fn.resolved).toBe(true)
-  expect(test.fn.result).toBe(1337)
+  expect((test.fn as any).resolved).toBe(true)
+  expect((test.fn as any).result).toBe(1337)
 })
 
 test('preconfigured decorator', () => {
   const error = new Error('hah')
   class Test {
     @task.resolved
-    fnResolved() {}
+    fnResolved() {
+      /**/
+    }
 
     @task.rejected({ error })
-    fnRejected() {}
+    fnRejected() {
+      /**/
+    }
   }
 
   const test = new Test()
 
-  expect(test.fnResolved.resolved).toBe(true)
-  expect(test.fnRejected.rejected).toBe(true)
-  expect(test.fnRejected.error).toBe(error)
+  expect((test.fnResolved as any).resolved).toBe(true)
+  expect((test.fnRejected as any).rejected).toBe(true)
+  expect((test.fnRejected as any).error).toBe(error)
 })
 
 test('bind returns a task function', async () => {
-  const fn = task(function(arg1) {
+  const fn = task(function(this: any, arg1: number) {
     return [this, arg1]
   })
   const that = {}
   const bound = fn.bind(that, 1)
-  const boundResult = await bound(1337)
+  const boundResult = await (bound as any)(1337)
   expect(boundResult[0]).toBe(that)
   expect(boundResult[1]).toBe(1)
 })
@@ -192,7 +199,7 @@ test('wrap returns a task function', async () => {
     return inner
   })
   expect(await fn()).toBe(42)
-  expect(fn.callCount).toBe(1)
+  expect((fn as any).callCount).toBe(1)
   expect(fn.resolved).toBe(true)
 })
 
@@ -218,7 +225,7 @@ test('can decorate an already decorated method', async () => {
   }
 
   const test = new Test()
-  expect(test.method.pending).toBe(true)
+  expect((test.method as any).pending).toBe(true)
   const method = test.method
   expect(await method()).toBe(test)
   // twice to test caching
@@ -239,13 +246,13 @@ test('can be tacked onto an observable', async () => {
 })
 
 test('match returns the case for the current state', () => {
-  const fn = task(() => undefined)
+  const fn = task((): number | undefined => undefined)
 
   const run = () =>
     fn.match({
       pending: () => 1,
       resolved: value => value,
-      rejected: err => err.message
+      rejected: (err: any) => err.message
     })
 
   expect(run()).toBe(1)
@@ -258,12 +265,12 @@ test('match returns the case for the current state', () => {
 })
 
 test('match returns undefined if there is no case', () => {
-  const fn = task(() => undefined)
+  const fn = task((): number | undefined => undefined)
 
   const run = () =>
     fn.match({
       resolved: value => value,
-      rejected: err => err.message
+      rejected: (err: any) => err.message
     })
 
   expect(run()).toBe(undefined)
@@ -276,7 +283,7 @@ test('match returns undefined if there is no case', () => {
 })
 
 test('match passes arguments to pending', () => {
-  const fn = task(() => undefined)
+  const fn = task((_a: number, _b: number) => undefined)
   let calledWith = null
   fn(1, 2)
   fn.match({
@@ -340,7 +347,7 @@ test('catches sync errors', async () => {
 
   await throws(() => fn())
   expect(fn.rejected).toBe(true)
-  expect(fn.error.message).toBe('hah')
+  expect((fn.error as any).message).toBe('hah')
 })
 
 test('reset() resets the state to resolved with result', async () => {
@@ -379,6 +386,8 @@ test('reset() resets the state to pending', async () => {
 test('autobind works', async () => {
   @autobind
   class Test {
+    value: number
+
     constructor() {
       this.value = 42
     }
@@ -394,18 +403,20 @@ test('autobind works', async () => {
   const fn = sub.func
   const result = await fn()
   expect(result).toBe(42)
-  expect(fn.state).toBe('resolved')
-  expect(sub.func.state).toBe('resolved')
+  expect((fn as any).state).toBe('resolved')
+  expect((sub.func as any).state).toBe('resolved')
 })
 
 test('can reassign decorated method', async () => {
   class Test {
     @task
-    method() {}
+    method() {
+      /**/
+    }
   }
 
   const sub = new Test()
-  sub.method = 123
+  sub.method = 123 as any
   expect(sub.method).toBe(123)
 })
 

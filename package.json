@@ -1,47 +1,32 @@
 {
   "name": "mobx-task",
-  "version": "1.0.4",
+  "version": "0.0.0-development",
   "description": "Removes boilerplate of tracking when an async function is running for MobX.",
   "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.0.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest",
-    "build": "rimraf lib && babel src -d lib -s",
-    "lint": "esw --fix src/ && prettier --write 'src/**/*.{js,ts}'",
-    "lint-watch": "npm run lint -- --watch",
-    "cover": "npm test -- --coverage",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "publish:pre": "npm run lint && npm run build && npm run cover",
-    "publish:post": "npm publish && git push --follow-tags",
-    "release:prerelease": "npm run publish:pre && npm version prerelease && npm run publish:post",
-    "release:patch": "npm run publish:pre && npm version patch && npm run publish:post",
-    "release:minor": "npm run publish:pre && npm version minor && npm run publish:post",
-    "release:major": "npm run publish:pre && npm version major && npm run publish:post"
-  },
-  "lint-staged": {
-    "*.js": [
-      "esw --fix",
-      "prettier --write",
-      "git add"
-    ]
+    "build": "rimraf lib && tsc -p tsconfig.build.json",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "lint": "tslint --project tsconfig.json --fix \"src/**/*.ts\" && prettier --write \"src/**/*.ts\"",
+    "cover": "jest --coverage",
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "semantic-release": "semantic-release"
   },
   "files": [
     "lib",
     "LICENSE.md",
     "README.md"
   ],
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
-  },
   "directories": {
     "lib": "lib"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jeffijoe/mobx-task.git"
+    "url": "https://github.com/jeffijoe/mobx-task.git"
   },
   "keywords": [
     "async",
@@ -53,62 +38,78 @@
   "author": "Jeff Hansen <jeff@jeffijoe.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jeffijoe/mobx-task/issues"
+    "url": "https://github.com/jeffijoe/tsmodule/issues"
   },
-  "homepage": "https://github.com/jeffijoe/mobx-task#readme",
+  "homepage": "https://github.com/jeffijoe/tsmodule#readme",
+  "dependencies": {
+    "tslib": "^1.9.3"
+  },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-proposal-decorators": "^7.4.4",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
+    "@semantic-release/condition-codeship": "^1.1.0",
+    "@semantic-release/release-notes-generator": "^7.1.4",
+    "@types/jest": "^24.0.18",
+    "@types/lodash": "^4.14.138",
+    "@types/node": "^12.0.2",
+    "@types/prettier": "^1.18.2",
+    "@types/rimraf": "^2.0.2",
+    "@types/semantic-release": "^15.13.0",
     "autobind-decorator": "^2.4.0",
-    "ava": "^2.2.0",
-    "babel-eslint": "^10.0.2",
-    "babel-jest": "^24.8.0",
-    "coveralls": "^3.0.6",
-    "eslint": "^6.1.0",
-    "eslint-config-prettier": "^6.0.0",
-    "eslint-config-standard": "^13.0.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^9.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "eslint-watch": "^6.0.0",
-    "husky": "^3.0.3",
+    "coveralls": "^3.0.3",
+    "husky": "^3.0.5",
     "jest": "^24.8.0",
-    "lint-staged": "^9.2.1",
+    "lint-staged": "^9.2.5",
     "lodash": "^4.17.15",
     "mobx": "^5.13.0",
-    "prettier": "^1.18.2",
-    "promise-defer": "^1.0.0",
-    "rimraf": "^2.6.3",
-    "sinon": "^7.4.1",
-    "smid": "^0.1.1"
+    "prettier": "^1.17.1",
+    "rimraf": "^3.0.0",
+    "semantic-release": "^15.13.24",
+    "smid": "^0.1.1",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.4.5"
   },
-  "peerDependencies": {
-    "mobx": ">4.0.0 <6.0.0"
+  "lint-staged": {
+    "*.ts": [
+      "tslint --fix --project tsconfig.json",
+      "prettier --write",
+      "git add"
+    ]
   },
   "jest": {
-    "testRegex": "(/__tests__/.*\\.(test|spec))\\.(ts|tsx|js)$",
     "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*\\.(test|spec))\\.ts$",
+    "collectCoverageFrom": [
+      "src/**/*.ts"
+    ],
     "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "__tests__"
+      "/node_modules/"
     ],
-    "testPathIgnorePatterns": [
-      "lib"
+    "modulePaths": [
+      "src"
     ],
+    "coverageDirectory": "<rootDir>/coverage",
+    "transform": {
+      "\\.(ts|tsx)": "ts-jest"
+    },
     "moduleFileExtensions": [
+      "ts",
       "tsx",
       "js"
-    ]
+    ],
+    "globals": {}
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "peerDependencies": {
+    "mobx": ">4.0.0 <6.0.0"
   }
 }

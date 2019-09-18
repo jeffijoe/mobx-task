@@ -10,8 +10,12 @@
  * @params {string[]} keys
  * The keys to proxy.
  */
-module.exports.proxyGetters = function proxyGetters(target, obj, keys) {
-  keys.map(key => {
+export function proxyGetters<T, U>(
+  target: T,
+  obj: U,
+  keys: Array<keyof U>
+): void {
+  keys.forEach(key => {
     Object.defineProperty(target, key, {
       get: () => obj[key]
     })
@@ -21,12 +25,14 @@ module.exports.proxyGetters = function proxyGetters(target, obj, keys) {
 /**
  * Invokes the function in a promise-safe way.
  */
-module.exports.promiseTry = function promiseTry(fn) {
-  return new Promise((resolve, reject) => {
+export function promiseTry<R>(
+  fn: () => R
+): R extends Promise<infer P> ? Promise<P> : Promise<R> {
+  return new Promise<any>((resolve, reject) => {
     try {
       resolve(fn())
     } catch (err) {
       reject(err)
     }
-  })
+  }) as any
 }
