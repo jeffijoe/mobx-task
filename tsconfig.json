@@ -10,6 +10,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
+    "inlineSources": true,
     "declaration": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
