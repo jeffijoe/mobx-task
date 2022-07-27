@@ -12,6 +12,6 @@ export function defer<T>() {
     },
     reject(err: unknown) {
       reject(err)
-    }
+    },
   }
 }

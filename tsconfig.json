@@ -4,17 +4,19 @@
   "compilerOptions": {
     "outDir": "./lib",
     "strict": true,
-    "esModuleInterop": true,
+    "strictNullChecks": true,
     "experimentalDecorators": true,
-    "target": "es2015",
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "useDefineForClassFields": true,
+    "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
+    "importHelpers": false,
     "sourceMap": true,
-    "inlineSources": true,
     "declaration": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./",
     "lib": ["es6", "es7"]
   }
 }

@@ -21,9 +21,9 @@ test('task group', async () => {
       group.match({
         pending: () => 'pending',
         resolved: () => 'resolved',
-        rejected: () => 'rejected'
+        rejected: () => 'rejected',
       }),
-    v => reactor(v)
+    (v) => reactor(v)
   )
 
   expect(group.state).toBe('resolved')
@@ -86,7 +86,7 @@ test('only switches task on pending change', async () => {
   deferred2.resolve(2)
   await p2
   expect(group.resolved).toBe(true)
-  expect(group.match({ resolved: v => v * 10 })).toBe(20)
+  expect(group.match({ resolved: (v) => v * 10 })).toBe(20)
 })
 
 test('invalid tasks length', () => {

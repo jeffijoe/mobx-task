@@ -1,4 +1,4 @@
-import { task, Task } from '../task'
+import { task } from '../task'
 
 // tslint:disable:await-promise
 
