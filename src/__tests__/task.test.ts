@@ -1,5 +1,5 @@
-import { reaction, action, observable } from 'mobx'
-import { task } from '../index'
+import { reaction, action, observable, makeAutoObservable } from 'mobx'
+import { Task, task } from '../index'
 import { memoize } from 'lodash'
 import autobind from 'autobind-decorator'
 import { throws } from 'smid'
@@ -179,7 +179,7 @@ test('preconfigured decorator', () => {
 })
 
 test('bind returns a task function', async () => {
-  const fn = task(function(this: any, arg1: number) {
+  const fn = task(function (this: any, arg1: number) {
     return [this, arg1]
   })
   const that = {}
@@ -190,7 +190,7 @@ test('bind returns a task function', async () => {
 })
 
 test('wrap returns a task function', async () => {
-  const fn = task(() => 42).wrap(f => {
+  const fn = task(() => 42).wrap((f) => {
     const inner = () => {
       inner.callCount += 1
       return f()
@@ -213,23 +213,68 @@ test('can be memoized', async () => {
 
 test('can decorate an already decorated method', async () => {
   /**
+   * A basic decorator that replaces the function with a wrapper.
+   */
+  function anotherDecorator(
+    target: any,
+    key: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const inner = descriptor.value
+    descriptor.value = function wrapped(this: any, ...args: any[]) {
+      this.wrapperCalled = key
+      return inner.apply(this, args)
+    }
+  }
+
+  /**
    * For this to work the task decorator has
    * to be the last decorator to run (declared first)
    */
   class Test {
+    wrapperCalled = ''
+
     @task
-    @action.bound
-    method() {
+    @anotherDecorator
+    async method() {
       return this
     }
   }
 
   const test = new Test()
-  expect((test.method as any).pending).toBe(true)
+  expect((test.method as unknown as Task<any, any>).pending).toBe(true)
+  await test.method()
+  expect(test.wrapperCalled).toBe('method')
+})
+
+test('can use field setter with stacked MobX annotation', async () => {
+  class Test {
+    value = 0
+
+    constructor() {
+      makeAutoObservable(this)
+    }
+
+    method = task(
+      action(() => {
+        this.value++
+        return this
+      })
+    )
+  }
+
+  const test = new Test()
+  const reactionCalls = jest.fn()
+  reaction(() => test.value, reactionCalls, { fireImmediately: false })
+
+  expect(test.method.pending).toBe(true)
   const method = test.method
   expect(await method()).toBe(test)
   // twice to test caching
   expect(await method()).toBe(test)
+
+  expect(test.value).toBe(2)
+  expect(reactionCalls).toHaveBeenCalledTimes(2)
 })
 
 test('can be tacked onto an observable', async () => {
@@ -237,7 +282,7 @@ test('can be tacked onto an observable', async () => {
     todos: [],
     fetchTodos: task(async () => {
       return [{ text: 'install mobx-task' }]
-    })
+    }),
   })
 
   expect(store.fetchTodos.pending).toBe(true)
@@ -251,8 +296,8 @@ test('match returns the case for the current state', () => {
   const run = () =>
     fn.match({
       pending: () => 1,
-      resolved: value => value,
-      rejected: (err: any) => err.message
+      resolved: (value) => value,
+      rejected: (err: any) => err.message,
     })
 
   expect(run()).toBe(1)
@@ -269,8 +314,8 @@ test('match returns undefined if there is no case', () => {
 
   const run = () =>
     fn.match({
-      resolved: value => value,
-      rejected: (err: any) => err.message
+      resolved: (value) => value,
+      rejected: (err: any) => err.message,
     })
 
   expect(run()).toBe(undefined)
@@ -289,20 +334,20 @@ test('match passes arguments to pending', () => {
   fn.match({
     pending: (arg1, arg2) => {
       calledWith = [arg1, arg2]
-    }
+    },
   })
   expect(calledWith).toEqual([1, 2])
 })
 
 test('calling the function multiple times will only trigger setState:resolved once', async () => {
-  const fn = task(d => d.promise)
+  const fn = task((d) => d.promise)
   const d1 = defer()
   const d2 = defer()
 
   const p1 = fn(d1)
   const p2 = fn(d2)
 
-  await new Promise(resolve => setTimeout(resolve, 20))
+  await new Promise((resolve) => setTimeout(resolve, 20))
 
   d1.resolve(1)
   const r1 = await p1
@@ -318,14 +363,14 @@ test('calling the function multiple times will only trigger setState:resolved on
 })
 
 test('calling the function multiple times will not trigger setState:rejected if not the last call', async () => {
-  const fn = task(d => d.promise)
+  const fn = task((d) => d.promise)
   const d1 = defer()
   const d2 = defer()
 
   const p1 = fn(d1)
   const p2 = fn(d2)
 
-  await new Promise(resolve => setTimeout(resolve, 20))
+  await new Promise((resolve) => setTimeout(resolve, 20))
 
   d1.reject(new Error('Oh shit'))
   const r1 = await throws(() => p1)
@@ -435,7 +480,7 @@ test('decorator value is cached', async () => {
 
 test('decorator supports fields with functions', async () => {
   class Test {
-    @task method = function() {
+    @task method = function () {
       return 42
     }
   }

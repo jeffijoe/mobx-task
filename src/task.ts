@@ -152,12 +152,12 @@ export { task }
 function createTask<A extends any[], R>(
   fn: (...args: A) => R | Promise<R>,
   opts: TaskOptions<A, R>
-) {
+): Task<A, R> {
   opts = {
     swallow: false,
     state: 'pending',
-    args: ([] as unknown) as A,
-    ...opts
+    args: [] as unknown as A,
+    ...opts,
   }
 
   // Track how many times this task was called.
@@ -168,33 +168,33 @@ function createTask<A extends any[], R>(
   /**
    * The actual task function.
    */
-  function task(this: any, ...args: A) {
+  const task = action(function taskCore(this: any, ...args: A) {
     const callCountWhenStarted = ++callCount
     return promiseTry(() => {
       ;(task as Task<A, R>).setState({
         state: 'pending',
         error: undefined,
         result: undefined,
-        args: Array.from(arguments) as A
+        args: Array.from(arguments) as A,
       })
-      return Promise.resolve(fn.apply(this, args)).then(result => {
+      return Promise.resolve(fn.apply(this, args)).then((result) => {
         // If we called the task again before the first
         // one completes, we don't want to set to resolved before the last call completes.
         if (callCountWhenStarted === callCount) {
           ;(task as Task<A, R>).setState({
             state: 'resolved',
             error: undefined,
-            result: result as WithoutPromise<R>
+            result: result as WithoutPromise<R>,
           })
         }
         return result
       })
-    }).catch(err => {
+    }).catch((err) => {
       if (callCountWhenStarted === callCount) {
         ;(task as Task<A, R>).setState({
           state: 'rejected',
           error: err,
-          result: undefined
+          result: undefined,
         })
       }
       if (!opts.swallow) {
@@ -202,9 +202,9 @@ function createTask<A extends any[], R>(
       }
       // To avoid the case where `opts.swallow` is true.
       // If you use this, you know the risks.
-      return (undefined as unknown) as R
+      return undefined as unknown as R
     })
-  }
+  })
 
   const taskStateSchema: TaskState<A, R> = {
     state: opts.state!,
@@ -219,7 +219,7 @@ function createTask<A extends any[], R>(
     },
     get rejected() {
       return taskState.state === 'rejected'
-    }
+    },
   }
 
   const taskStateSchemaKeys = Object.keys(taskStateSchema)
@@ -228,15 +228,15 @@ function createTask<A extends any[], R>(
     {
       error: observable.ref,
       result: observable.ref,
-      args: observable.ref
+      args: observable.ref,
     },
     {
-      deep: false
+      deep: false,
     }
   )
 
   setupTask(task, taskState, taskStateSchemaKeys, opts)
-  return task
+  return task as Task<A, R>
 }
 
 /**
@@ -314,10 +314,10 @@ function setupTask<A extends any[], R>(
       ;(fn as Task<A, R>).setState({
         state: opts.state,
         result: opts.result,
-        error: opts.error
+        error: opts.error,
       })
       return fn
-    }
+    },
   })
   return fn
 }
@@ -370,7 +370,7 @@ function taskCreatorFactory<A extends any[], R>(opts?: TaskOptions<A, R>) {
             Object.defineProperty(this, name, {
               value: wrapped,
               configurable: true,
-              writable: true
+              writable: true,
             })
             definingProperty = false
             return wrapped
@@ -379,13 +379,13 @@ function taskCreatorFactory<A extends any[], R>(opts?: TaskOptions<A, R>) {
             Object.defineProperty(this, name, {
               configurable: true,
               writable: true,
-              // IS enumerable when reassigned by the outside word
+              // IS enumerable when reassigned by the outside world
               enumerable: true,
-              value: newValue
+              value: newValue,
             })
 
             return newValue
-          }
+          },
         }
       }
     }

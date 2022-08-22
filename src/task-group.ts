@@ -20,7 +20,7 @@ const keysToDefinePropertiesFor: Array<QueryableMethods> = [
   'rejected',
   'result',
   'error',
-  'match'
+  'match',
 ]
 
 /**
@@ -42,19 +42,22 @@ export function TaskGroup<A extends any[], R>(
       'TaskGroup: there must be at least one task in the array passed to TaskGroup.'
     )
   }
-  const initialTask = tasks.find(t => t.pending) || tasks[0]
+  const initialTask = tasks.find((t) => t.pending) || tasks[0]
   const latestTask = observable.box(initialTask, {
-    defaultDecorator: observable.ref
+    defaultDecorator: observable.ref,
   })
-  tasks.forEach(t => {
-    reaction(() => t.pending === true, pending => pending && latestTask.set(t))
+  tasks.forEach((t) => {
+    reaction(
+      () => t.pending === true,
+      (pending) => pending && latestTask.set(t)
+    )
   })
   const group: any = {}
-  keysToDefinePropertiesFor.forEach(key => {
+  keysToDefinePropertiesFor.forEach((key) => {
     const c = computed(() => latestTask.get()[key])
     Object.defineProperty(group, key, {
       configurable: false,
-      get: () => c.get()
+      get: () => c.get(),
     })
   })
   return group

@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0
+
+* **Breaking**: Stacking the `@task` decorator with MobX `@action` no longer works in MobX v6. Instead, the task itself was made an action by default. This was done to escape the MobX auto-action behavior.
+* **Breaking**: TypeScript target updated to `es6`.
+* Add MobX v6 support.
+* Upgrade all dependencies.
+
+## 2.0.1
+
+- Fix sourcemaps content.
+
 ## 2.0.0
 
 - TypeScript definitions for public API based on the DefinitelyTyped ones.

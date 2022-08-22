@@ -22,7 +22,7 @@ test('promiseTry returns a promise that resolves', async () => {
 test('proxyGetters defines getters for values on the given object', () => {
   const values = {
     val1: 1,
-    val2: 2
+    val2: 2,
   }
   const target: Function & typeof values = (() => 42) as any
   proxyGetters(target, values, ['val1', 'val2'])

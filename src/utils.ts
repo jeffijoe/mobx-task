@@ -15,9 +15,9 @@ export function proxyGetters<T, U>(
   obj: U,
   keys: Array<keyof U>
 ): void {
-  keys.forEach(key => {
+  keys.forEach((key) => {
     Object.defineProperty(target, key, {
-      get: () => obj[key]
+      get: () => obj[key],
     })
   })
 }
