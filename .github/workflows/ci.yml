@@ -1,0 +1,66 @@
+# Name of the pipeline
+name: CI
+
+# Allow the token to create releases and read pull requests.
+# Needed for semantic-release.
+permissions:
+  contents: write
+  pull-requests: read
+
+# When pushing to `master` or when there is a PR for the branch.
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  ci:
+    name: Lint, Test & Release (Node ${{ matrix.version }})
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: true
+      matrix:
+        version:
+          - 16
+          - 18
+          - 20
+          - current
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }}
+          cache: 'npm'
+
+      - name: Install Packages
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - if: ${{ matrix.version == 'current' }}
+        name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run cover
+
+      - if: ${{ matrix.version == 'current' }}
+        name: Coveralls
+        uses: coverallsapp/github-action@v2
+
+      - if: ${{ matrix.version == 'current' }}
+        name: Semantic Release
+        run: npm run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+# Cancel running workflows for the same branch when a new one is started.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true

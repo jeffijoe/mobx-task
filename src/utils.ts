@@ -13,7 +13,7 @@
 export function proxyGetters<T, U>(
   target: T,
   obj: U,
-  keys: Array<keyof U>
+  keys: Array<keyof U>,
 ): void {
   keys.forEach((key) => {
     Object.defineProperty(target, key, {
@@ -26,7 +26,7 @@ export function proxyGetters<T, U>(
  * Invokes the function in a promise-safe way.
  */
 export function promiseTry<R>(
-  fn: () => R
+  fn: () => R,
 ): R extends Promise<infer P> ? Promise<P> : Promise<R> {
   return new Promise<any>((resolve, reject) => {
     try {

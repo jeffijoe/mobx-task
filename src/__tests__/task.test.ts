@@ -218,7 +218,7 @@ test('can decorate an already decorated method', async () => {
   function anotherDecorator(
     target: any,
     key: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const inner = descriptor.value
     descriptor.value = function wrapped(this: any, ...args: any[]) {
@@ -259,7 +259,7 @@ test('can use field setter with stacked MobX annotation', async () => {
       action(() => {
         this.value++
         return this
-      })
+      }),
     )
   }
 
@@ -400,7 +400,7 @@ test('reset() resets the state to resolved with result', async () => {
     () => {
       return 1337
     },
-    { state: 'resolved', result: 42 }
+    { state: 'resolved', result: 42 },
   )
   expect(fn.result).toBe(42)
 
