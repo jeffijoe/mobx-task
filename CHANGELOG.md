@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.1
+
+* Fix sourcemaps again
+* Move from Travis to GitHub Actions for CI
+* Move from tslint to eslint for linting
+* Upgrade packages
+
 ## 3.0.0
 
 * **Breaking**: Stacking the `@task` decorator with MobX `@action` no longer works in MobX v6. Instead, the task itself was made an action by default. This was done to escape the MobX auto-action behavior.
