@@ -86,7 +86,7 @@ export interface TaskMethods<A extends any[], R> {
    * @param func
    */
   wrap<NA extends any[], NR>(
-    func: (inner: (...args: A) => R) => (...args: NA) => NR
+    func: (inner: (...args: A) => R) => (...args: NA) => NR,
   ): Task<NA, NR>
   /**
    * Sets the state.
@@ -116,7 +116,7 @@ export interface TaskCreator<K extends keyof TaskOptions<any, any>>
    */
   <A extends any[], R>(
     func: (...args: A) => R,
-    options?: Pick<TaskOptions<A, R>, K>
+    options?: Pick<TaskOptions<A, R>, K>,
   ): Task<A, R>
 
   (options: Pick<TaskOptions<any, any>, K>): PropertyDecorator
@@ -151,7 +151,7 @@ export { task }
  */
 function createTask<A extends any[], R>(
   fn: (...args: A) => R | Promise<R>,
-  opts: TaskOptions<A, R>
+  opts: TaskOptions<A, R>,
 ): Task<A, R> {
   opts = {
     swallow: false,
@@ -175,7 +175,7 @@ function createTask<A extends any[], R>(
         state: 'pending',
         error: undefined,
         result: undefined,
-        args: Array.from(arguments) as A,
+        args: Array.from(args) as A,
       })
       return Promise.resolve(fn.apply(this, args)).then((result) => {
         // If we called the task again before the first
@@ -232,7 +232,7 @@ function createTask<A extends any[], R>(
     },
     {
       deep: false,
-    }
+    },
   )
 
   setupTask(task, taskState, taskStateSchemaKeys, opts)
@@ -246,7 +246,7 @@ function setupTask<A extends any[], R>(
   fn: (...args: A) => Promise<R>,
   taskState: TaskState<A, R>,
   taskStateSchemaKeys: any,
-  opts: TaskOptions<A, R>
+  opts: TaskOptions<A, R>,
 ) {
   const setup = (func: any) =>
     setupTask(func, taskState, taskStateSchemaKeys, opts)
@@ -273,7 +273,7 @@ function setupTask<A extends any[], R>(
       return setup(
         wrapper(function wrapped(this: any, ...args: A) {
           return fn.apply(this, args)
-        })
+        }),
       )
     },
     /**
@@ -298,7 +298,7 @@ function setupTask<A extends any[], R>(
 
       switch (state) {
         case 'pending':
-          return match.apply(null, taskState.args)
+          return match(...taskState.args)
         case 'resolved':
           return match(taskState.result)
         case 'rejected':
@@ -340,7 +340,7 @@ function taskCreatorFactory<A extends any[], R>(opts?: TaskOptions<A, R>) {
       return function decorator(
         _target: any,
         name: string,
-        descriptor: any = {}
+        descriptor: any = {},
       ) {
         let get = descriptor.get
         if (descriptor.value || descriptor.initializer) {
@@ -358,13 +358,13 @@ function taskCreatorFactory<A extends any[], R>(opts?: TaskOptions<A, R>) {
         // Credit: autobind-decorator source
         let definingProperty = false
         return {
-          get: function getter() {
+          get: function getter(...args: unknown[]) {
             /* istanbul ignore next */
             if (definingProperty) {
               return get.apply(this)
             }
 
-            const fn = get.apply(this, arguments)
+            const fn = get.apply(this, args)
             const wrapped = createTask(fn, { ...opts, ...innerOpts })
             definingProperty = true
             Object.defineProperty(this, name, {

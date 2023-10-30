@@ -35,11 +35,11 @@ export type TaskGroup<A extends any[], R> = Pick<Task<A, R>, QueryableMethods>
  * @param tasks
  */
 export function TaskGroup<A extends any[], R>(
-  tasks: Array<Task<A, R>>
+  tasks: Array<Task<A, R>>,
 ): TaskGroup<A, R> {
   if (!tasks || tasks.length === 0) {
     throw new TypeError(
-      'TaskGroup: there must be at least one task in the array passed to TaskGroup.'
+      'TaskGroup: there must be at least one task in the array passed to TaskGroup.',
     )
   }
   const initialTask = tasks.find((t) => t.pending) || tasks[0]
@@ -49,7 +49,7 @@ export function TaskGroup<A extends any[], R>(
   tasks.forEach((t) => {
     reaction(
       () => t.pending === true,
-      (pending) => pending && latestTask.set(t)
+      (pending) => pending && latestTask.set(t),
     )
   })
   const group: any = {}

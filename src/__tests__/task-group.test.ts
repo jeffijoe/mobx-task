@@ -23,7 +23,7 @@ test('task group', async () => {
         resolved: () => 'resolved',
         rejected: () => 'rejected',
       }),
-    (v) => reactor(v)
+    (v) => reactor(v),
   )
 
   expect(group.state).toBe('resolved')
@@ -91,6 +91,6 @@ test('only switches task on pending change', async () => {
 
 test('invalid tasks length', () => {
   expect(() => TaskGroup([])).toThrowErrorMatchingInlineSnapshot(
-    `"TaskGroup: there must be at least one task in the array passed to TaskGroup."`
+    `"TaskGroup: there must be at least one task in the array passed to TaskGroup."`,
   )
 })
