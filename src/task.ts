@@ -2,11 +2,6 @@ import { observable, action } from 'mobx'
 import { proxyGetters, promiseTry } from './utils'
 
 /**
- * Returns a type without the promise wrapper.
- */
-export type WithoutPromise<T> = T extends Promise<infer P> ? P : T
-
-/**
  * Task status.
  */
 export type TaskStatus = 'pending' | 'resolved' | 'rejected'
@@ -22,7 +17,7 @@ export type TaskFunc<A extends any[], R> = (...args: A) => Promise<R>
 export interface TaskOptions<A extends any[], R> {
   state?: TaskStatus
   error?: unknown
-  result?: WithoutPromise<R>
+  result?: Awaited<R>
   args?: A
   swallow?: boolean
 }
@@ -33,7 +28,7 @@ export interface TaskOptions<A extends any[], R> {
 export interface TaskMatchProps<T1, T2, T3, A extends any[], R = any> {
   pending?: (...args: A) => T1
   rejected?: (error: unknown) => T2
-  resolved?: (result: WithoutPromise<R>) => T3
+  resolved?: (result: Awaited<R>) => T3
 }
 
 /**
@@ -63,7 +58,7 @@ export interface TaskState<A extends any[], R> {
   /**
    * The result of the last invocation.
    */
-  readonly result?: WithoutPromise<R>
+  readonly result?: Awaited<R>
   /**
    * The error of the last failed invocation.
    */
@@ -101,7 +96,7 @@ export interface TaskMethods<A extends any[], R> {
 /**
  * Task function, state and methods.
  */
-export type Task<A extends any[], R> = TaskFunc<A, WithoutPromise<R>> &
+export type Task<A extends any[], R> = TaskFunc<A, Awaited<R>> &
   TaskState<A, R> &
   TaskMethods<A, R>
 
@@ -184,7 +179,7 @@ function createTask<A extends any[], R>(
           ;(task as Task<A, R>).setState({
             state: 'resolved',
             error: undefined,
-            result: result as WithoutPromise<R>,
+            result: result as Awaited<R>,
           })
         }
         return result
